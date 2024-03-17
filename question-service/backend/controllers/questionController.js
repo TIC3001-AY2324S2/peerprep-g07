@@ -25,6 +25,12 @@ const addQuestion = async (req, res) => {
     }
   
     try {
+      // check if question already exist 
+      const query = await Question.where({title: title}).findOne()
+      if ( query != null ) {
+        return res.status(400).json({ message: 'Question already exists.' })
+      }
+
       // function provided by Mongoose to create a new Question document
       const question = await Question.create({
         title,
