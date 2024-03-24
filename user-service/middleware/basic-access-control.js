@@ -3,6 +3,7 @@ import { ormFindUserByEmail } from "../model/user-orm.js";
 
 export function verifyAccessToken(req, res, next) {
   const authHeader = req.headers["authorization"];
+  console.log(authHeader)
   if (!authHeader) {
     return res.status(401).json({ message: "Authentication failed" });
   }
@@ -11,13 +12,13 @@ export function verifyAccessToken(req, res, next) {
   const token = authHeader.split(" ")[1];
   jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
     if (err) {
-      return res.status(401).json({ message: "Authentication failed" });
+      return res.status(401).json({ message: "Authentication failed: token not matched" });
     }
 
     // load latest user info from DB
     const dbUser = await ormFindUserByEmail(user.email);
     if (!dbUser) {
-      return res.status(401).json({ message: "Authentication failed" });
+      return res.status(401).json({ message: "Authentication failed: no such user" });
     }
 
     req.user = { id: dbUser.id, username: dbUser.username, email: dbUser.email, isAdmin: dbUser.isAdmin };

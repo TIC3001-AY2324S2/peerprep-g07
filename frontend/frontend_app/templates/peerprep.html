@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block user_management %}
+    <div id="user-service-container">
+        <div class="container mb-5">
+            <!-- Alert -->
+            <div id="login-alert" class="alert" style="display: none;"></div>
+
+            <!-- Sign Up card -->
+            <div id="signup-card" class="row justify-content-center py-5" style="display: none;">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-5 px-md-5">
+                            <h1 class="card-title pb-3">Sign Up</h1>
+                            <form id="signup-form" class="d-grid">
+                                <!-- Username input -->
+                                <div class="row">
+                                    <div class="form-outline mb-4">
+                                        <input type="text" id="su-username" class="form-control" />
+                                        <label class="form-label" for="su-username">Username</label>
+                                    </div>
+                                </div>
+
+                                <!-- Email input -->
+                                <div class="form-outline mb-4">
+                                    <input type="email" id="su-email" class="form-control" />
+                                    <label class="form-label" for="su-email">Email address</label>
+                                </div>
+
+                                <!-- Password input -->
+                                <div class="form-outline mb-4">
+                                    <input type="password" id="su-password" class="form-control" />
+                                    <label class="form-label" for="su-password">Password</label>
+                                </div>
+
+                                <!-- Sign Up button -->
+                                <button type="submit" id="signup" class="btn btn-primary btn-block mb-4">
+                                    Sign up
+                                </button>
+
+                                <p>Already have an account? <a id="login-link" href="#">Login</a></p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login card -->
+            <div id="login-card" class="row justify-content-center py-5">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-5 px-md-5">
+                            <h1 class="card-title pb-3">Login</h1>
+                            <form id="login-form" class="d-grid">
+                                <!-- Email input -->
+                                <div class="form-outline mb-4">
+                                    <input type="email" id="l-email" class="form-control" />
+                                    <label class="form-label" for="l-email">Email address</label>
+                                </div>
+            
+                                <!-- Password input -->
+                                <div class="form-outline mb-4">
+                                    <input type="password" id="l-password" class="form-control" />
+                                    <label class="form-label" for="l-password">Password</label>
+                                </div>
+            
+                                <!-- Login button -->
+                                <button type="submit" id="login" class="btn btn-primary btn-block mb-4">
+                                    Login
+                                </button>
+
+                                <p>Don't have an account? <a id="signup-link" href="#">Sign Up</a></p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="welcome-text" class="d-flex justify-content-center py-5" style="display: none !important;">
+                <p class="text-white">Welcome, <span id="username-placeholder">User</span>.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="d-flex justify-content-between mb-4">
+            <h1 class="fw-bold">Question Repository</h1>
+            <div class="d-flex align-self-center">
+                <button id="createQuestionBtn" class="btn btn-primary p-2" data-bs-toggle="modal" data-bs-target="#createQuestionModal">
+                    <i class="bi bi-plus-lg"></i>&ensp;Create a new question
+                </button>
+            </div>
+        </div>
+
+        <table id="question-table" class="table table-hover text-center text-muted">
+
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Complexity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for qn in questions %}
+                <tr>
+                    <td>{{ qn.title }}</td>
+                    <td>{{ qn.description }}</td>
+                    <td>{{ qn.category }}</td>
+                    <td>{{ qn.complexity }}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm"><i class="bi bi-info-circle"></i></button>
+                        <button class="btn btn-warning btn-sm"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn btn-danger btn-sm"><i class="bi bi-trash-fill"></i></button>
+                    </td>
+                </tr>
+                {% endfor %}
+            <tbody>
+
+        </table>
+    </div>
+
+    <!-- Create Question Modal -->
+    <div id="createQuestionModal" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create a New Question</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createQuestionForm">
+                        <div class="form-group">
+                            <label for="questionTitle">Title</label>
+                            <input type="text" class="form-control" id="questionTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="questionDescription">Description</label>
+                            <textarea class="form-control" id="questionDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="questionCategory">Category</label>
+                            <select class="form-control" id="questionCategory" required>
+                                <option disabled selected hidden>Choose an option</option>
+                                <option value="Data Structures">Data Structures</option>
+                                <option value="Algorithms">Algorithms</option>
+                                <option value="Strings">Strings</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="questionComplexity">Complexity</label>
+                            <select class="form-control" id="questionComplexity" required>
+                                <option disabled selected hidden>Choose an option</option>
+                                <option value="easy">Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock user_management %}
+
+
+{% block style %}
+<style>
+    #user-service-container{
+        background: linear-gradient(to right, #7866ff, #b249df);
+    }
+    .card{
+        border-radius: 25px;
+    }
+    #welcome-text{
+        font-size: 5rem;
+        font-weight: 500;
+    }
+    .form-group{
+        padding-bottom: 2em;
+    }
+</style>
+{% endblock style %}
+
+{% block script %}
+<script>
+    $(document).ready(function () {
+        // ******** USER SERVICE FUNCTIONS ********
+
+        // After successful login
+        // function handleLogin(username, token) {
+        //     // Cache user information in localStorage
+        //     localStorage.setItem('username', username);
+        //     localStorage.setItem('token', token);
+            
+        //     // Display welcome message
+        //     displayWelcomeMessage(username);
+        // }
+
+        // // Check if user is already logged in
+        // function checkLoginStatus() {
+        //     var username = localStorage.getItem('username');
+        //     var token = localStorage.getItem('token');
+            
+        //     if (username && token) {
+        //         // User is logged in, display welcome message
+        //         displayWelcomeMessage(username);
+        //     } else {
+        //         // User is not logged in, show login form or redirect to login page
+        //         // ...
+        //     }
+        // }
+
+        // // Display welcome message
+        // function displayWelcomeMessage(username) {
+        //     var welcomeMessage = 'Welcome, ' + username + '!';
+        //     document.getElementById('welcome').textContent = welcomeMessage;
+        // }
+
+        // // Call checkLoginStatus when the page loads
+        // checkLoginStatus();
+
+        var signupLink = document.getElementById("signup-link");
+        var loginLink = document.getElementById("login-link");
+        var signupCard = document.getElementById("signup-card");
+        var loginCard = document.getElementById("login-card");
+
+        function toggleCards(card1, card2) {
+            if (card1.style.display === "none") {
+                card1.style.display = "flex";
+                card2.style.display = "none";
+            } else {
+                card1.style.display = "none";
+                card2.style.display = "flex";
+            }
+        }
+
+        signupLink.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent the default link behavior
+            toggleCards(signupCard, loginCard);
+        });
+
+        loginLink.addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent the default link behavior
+            toggleCards(signupCard, loginCard);
+        });
+
+        var usernameSpan = document.getElementById("username-placeholder");
+        var welcomeText = document.getElementById("welcome-text");
+
+        function fetchUserData(token) {
+            $.ajax({
+                url: "http://localhost:3001/auth/verify-token/",
+                method: "GET",
+                headers: {
+                    authorization: "Bearer " + token
+                },
+                success: function(response) {
+                    usernameSpan.textContent = response.verifiedUser.username;
+                    console.log("Fetched user data: ", response);
+                    toggleCards(welcomeText, loginCard)
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: ", error);
+                }
+            });
+        }
+
+        $("#signup-form").on("submit", function (event) {
+            var username = $("#su-username").val();
+            var email = $("#su-email").val();
+            var password = $("#su-password").val();
+
+            $.ajax({
+                url: "http://localhost:3001/users/",
+                type: "POST",
+                data: {
+                    username: username,
+                    email: email,
+                    password: password
+                },
+                success: function (response) {
+                    console.log("Success:", response);
+                    toggleCards(signupCard, loginCard);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    $('#login-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('#login-alert').addClass('alert-danger');
+                    $('#login-alert').append('<strong>Error!</strong> ' + error);
+                }
+            });
+            event.preventDefault();  // Prevents page from reloading (the default action)
+        });
+
+        $("#login-form").on("submit", function (event) {
+            var email = $("#l-email").val();
+            var password = $("#l-password").val();
+            console.log(email);
+            console.log(password);
+            $.ajax({
+                url: "http://localhost:3001/auth/login/",
+                type: "POST",
+                data: {
+                    email: email,
+                    password: password
+                },
+                success: function (response) {
+                    console.log("Success:", response);
+                    fetchUserData(response.accessToken);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    $('#login-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('#login-alert').addClass('alert-danger');
+                    $('#login-alert').tappendext('<strong>Error!</strong> ' + error);
+                }
+            });
+            event.preventDefault();  // Prevents page from reloading (the default action)
+        });
+
+        // ******** QUESTION SERVICE FUNCTIONS ********
+
+        // Question Repo DataTable settings
+        $('#question-table').DataTable({
+            "iDisplayLength": 10,
+            "columnDefs": [{ width: '200px', targets: [4] }],
+            // "order": [[9, 'asc']],  // order by a specific column
+        });
+
+        
+
+    });
+
+</script>
+{% endblock script %}
+
+</html>
