@@ -18,11 +18,11 @@ const cors = require('cors')
 const app = express()
 
 // allow cross-origin requests to reach the Expres.js server
-// from localhost:3000, which is your frontend domain
+// from localhost:8000, which is your frontend domain
 app.options(
   '*',
   cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:8000', 'http://127.0.0.1:8000'],
     optionsSuccessStatus: 200,
   }), 
 )
