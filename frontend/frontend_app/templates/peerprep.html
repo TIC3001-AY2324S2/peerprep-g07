@@ -76,13 +76,18 @@
                 </div>
             </div>
 
-            <div id="welcome-text" class="d-flex justify-content-center py-5" style="display: none !important;">
-                <p class="text-white">Welcome, <span id="username-placeholder">User</span>.</p>
+            <div class="row pb-5" id="welcome-user" style="display: none !important;">
+                <div id="welcome-text" class="d-flex justify-content-center pt-5">
+                    <p class="text-white">Welcome, <span id="username-placeholder">User</span>.</p>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button id="logoutBtn" class="btn btn-primary shadow p-2 px-5">Logout</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="container">
+    <div class="container mb-5">
         <div class="d-flex justify-content-between mb-4">
             <h1 class="fw-bold">Question Repository</h1>
             <div class="d-flex align-self-center">
@@ -193,86 +198,52 @@
 {% block script %}
 <script>
     $(document).ready(function () {
+        console.log(localStorage);
         // ******** USER SERVICE FUNCTIONS ********
 
-        // After successful login
-        // function handleLogin(username, token) {
-        //     // Cache user information in localStorage
-        //     localStorage.setItem('username', username);
-        //     localStorage.setItem('token', token);
-            
-        //     // Display welcome message
-        //     displayWelcomeMessage(username);
-        // }
-
-        // // Check if user is already logged in
-        // function checkLoginStatus() {
-        //     var username = localStorage.getItem('username');
-        //     var token = localStorage.getItem('token');
-            
-        //     if (username && token) {
-        //         // User is logged in, display welcome message
-        //         displayWelcomeMessage(username);
-        //     } else {
-        //         // User is not logged in, show login form or redirect to login page
-        //         // ...
-        //     }
-        // }
-
-        // // Display welcome message
-        // function displayWelcomeMessage(username) {
-        //     var welcomeMessage = 'Welcome, ' + username + '!';
-        //     document.getElementById('welcome').textContent = welcomeMessage;
-        // }
-
-        // // Call checkLoginStatus when the page loads
-        // checkLoginStatus();
-
-        var signupLink = document.getElementById("signup-link");
-        var loginLink = document.getElementById("login-link");
-        var signupCard = document.getElementById("signup-card");
-        var loginCard = document.getElementById("login-card");
+        var signupLink = $("#signup-link");
+        var loginLink = $("#login-link");
+        var signupCard = $("#signup-card");
+        var loginCard = $("#login-card");
+        var welcomeText = $("#welcome-user");
 
         function toggleCards(card1, card2) {
-            if (card1.style.display === "none") {
-                card1.style.display = "flex";
-                card2.style.display = "none";
+            if (card1.css('display') === "none") {
+                card1.css('display', 'flex');
+                card2.css('display', 'none');
             } else {
-                card1.style.display = "none";
-                card2.style.display = "flex";
+                card1.css('display', 'none');
+                card2.css('display', 'flex');
             }
         }
 
-        signupLink.addEventListener("click", function (event) {
+        signupLink.on("click", function (event) {
             event.preventDefault(); // Prevent the default link behavior
             toggleCards(signupCard, loginCard);
         });
 
-        loginLink.addEventListener("click", function (event) {
+        loginLink.on("click", function (event) {
             event.preventDefault(); // Prevent the default link behavior
             toggleCards(signupCard, loginCard);
         });
 
-        var usernameSpan = document.getElementById("username-placeholder");
-        var welcomeText = document.getElementById("welcome-text");
-
-        function fetchUserData(token) {
-            $.ajax({
-                url: "http://localhost:3001/auth/verify-token/",
-                method: "GET",
-                headers: {
-                    authorization: "Bearer " + token
-                },
-                success: function(response) {
-                    usernameSpan.textContent = response.verifiedUser.username;
-                    console.log("Fetched user data: ", response);
-                    toggleCards(welcomeText, loginCard)
-                },
-                error: function(xhr, status, error) {
-                    console.log("Error: ", error);
-                }
-            });
+        // Check if user is already logged in
+        function checkLoginStatus() {
+            var username = localStorage.getItem('username');
+            var token = localStorage.getItem('token');
+            
+            if (username && token) {
+                // User is logged in, display welcome message
+                displayWelcomeMessage(username);
+            } else {
+                // User is not logged in, show login form
+                loginCard.css('display', 'flex');
+                welcomeText.css('display', 'none');
+            }
         }
+
+        // Call checkLoginStatus when the page loads
+        checkLoginStatus();
 
         $("#signup-form").on("submit", function (event) {
             var username = $("#su-username").val();
@@ -317,7 +288,7 @@
                 },
                 success: function (response) {
                     console.log("Success:", response);
-                    fetchUserData(response.accessToken);
+                    handleLogin(response.accessToken);
                 },
                 error: function (xhr, status, error) {
                     console.error("Error:", error);
@@ -330,6 +301,43 @@
             });
             event.preventDefault();  // Prevents page from reloading (the default action)
         });
+
+        function handleLogin(token) {
+            $.ajax({
+                url: "http://localhost:3001/auth/verify-token/",
+                method: "GET",
+                headers: {
+                    authorization: "Bearer " + token
+                },
+                success: function(response) {
+                    var username = response.verifiedUser.username;
+                    // Cache user information in localStorage
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('token', token);
+                    console.log(localStorage);
+                    // Show welcome text
+                    displayWelcomeMessage(username);
+                    console.log("Fetched user data: ", response);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: ", error);
+                }
+            });
+        }
+
+        // Display welcome message
+        function displayWelcomeMessage(username) {
+            $("#username-placeholder").text(username);
+            toggleCards(welcomeText, loginCard);
+        }
+
+        $("#logoutBtn").on("click", function (event) {
+            localStorage.removeItem('username');
+            localStorage.removeItem('token');
+            toggleCards(welcomeText, loginCard);
+            console.log(localStorage);
+        });
+        
 
         // ******** QUESTION SERVICE FUNCTIONS ********
 
