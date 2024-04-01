@@ -13,6 +13,19 @@ const fetchAllQuestions = async (req, res) => {
   res.status(200).json(questions)
 }
 
+// @desc    Return a question
+// @route   GET /api/question
+// @access  Public
+const fetchOneQuestion = async (req, res) => {
+  try {
+    const question = await Question.findById(req.params.id)
+
+    res.status(200).json(question)
+  } catch (error) {
+    res.status(404).json({ message: 'Question not found' })
+  }
+}
+
 // @desc    Add a question
 // @route   POST /api/question
 // @access  Public
@@ -82,7 +95,7 @@ const updateQuestion = async (req, res) => {
       // save the changes made to a document
       await question.save()
   
-      // return the updated address in JSON format
+      // return the updated question in JSON format
       // with success status 200
       res.status(200).json({
         _id: question._id,
@@ -102,7 +115,7 @@ const updateQuestion = async (req, res) => {
 const deleteQuestion = async (req, res) => {
     try {
       // function provided by mongoose to find an
-      // Address document with a given ID
+      // Question document with a given ID
       // req.params.id is retrieved from /:id in route
       const question = await Question.findById(req.params.id)
       
@@ -117,5 +130,5 @@ const deleteQuestion = async (req, res) => {
   }
   
 // export controller functions to be used in corresponding route
-module.exports = { fetchAllQuestions, addQuestion, updateQuestion, deleteQuestion }
+module.exports = { fetchAllQuestions, fetchOneQuestion, addQuestion, updateQuestion, deleteQuestion }
 
