@@ -135,17 +135,22 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Alert -->
+                    <div id="form-alert" class="alert" style="display: none;"></div>
+                    <!-- Question Form -->
                     <form id="questionForm">
                         <input type="hidden" id="questionId" name="questionId">
 
                         <div class="form-group">
                             <label for="questionTitle">Title</label>
                             <input type="text" class="form-control" id="questionTitle" required>
+                            <span class="error" id="titleError"></span>
                         </div>
                         
                         <div class="form-group">
                             <label for="questionDescription">Description</label>
                             <textarea class="form-control" id="questionDescription" rows="3" required></textarea>
+                            <span class="error" id="descError"></span>
                         </div>
 
                         <div class="form-group">
@@ -176,6 +181,7 @@
                                     </label>
                                 </div>
                             </div>
+                            <span class="error" id="categoryError"></span>
                         </div>
 
                         <div class="form-group">
@@ -186,6 +192,7 @@
                                 <option value="Medium">Medium</option>
                                 <option value="Hard">Hard</option>
                             </select>
+                            <span class="error" id="complexityError"></span>
                         </div>
                     </form>
                 </div>
@@ -239,6 +246,9 @@
     }
     .form-group{
         padding-bottom: 2em;
+    }
+    .error{
+        color: red;
     }
 </style>
 {% endblock style %}
@@ -400,6 +410,9 @@
 
         // Create a new question
         $("#createQuestionBtn").on("click", function() {
+            // Clear error messages if any
+            $(".error").text("");
+            
             openModal();
         });
 
@@ -413,11 +426,15 @@
         
         // Update an existing question
         $(".edit-question-btn").on("click", function() {
+            // Clear error messages if any
+            $(".error").text("");
+            
             var questionId = $(this).data('question-id');
             openEditModal(questionId);
         });
 
-        function openEditModal(questionId) {
+        function openEditModal(questionId) {            
+
             isEditMode = true;
             $("#modalTitle").text("Edit Question");
             $("#submitQuestionBtn").text("Update");
@@ -458,14 +475,11 @@
 
         // Define what happens when the submitQuestionBtn is clicked
         $("#submitQuestionBtn").on("click", function () {
-            console.log(isEditMode);
+            console.log("isEditMode: " + isEditMode);
             submitForm();
         });
 
         function submitForm() {
-            // Perform form validation
-            // ...
-
             var title = $("#questionTitle").val();
             var desc = $("#questionDescription").val();            
             var complexity = $("#questionComplexity").val();
@@ -476,6 +490,11 @@
                 selectedCategories.push($(this).val());
             });
 
+            // Perform form validation
+            isValid = qnFormValidation(title, desc, selectedCategories, complexity);
+            if (!isValid) {
+                return;
+            }
 
             if (isEditMode) {
                 // Update question details
@@ -498,6 +517,9 @@
                     },
                     error: function (xhr, status, error) {
                         console.error("Error in updating question:", error);
+                        if (xhr.responseJSON.message === "Question already exists.") {
+                            duplicateQnAlert(xhr);
+                        }
                     }
                 });
 
@@ -515,17 +537,61 @@
                     }),
                     success: function (response) {
                         console.log("Successfully created a new question:", response);
+                        // Close the modal and reload the page
                         $('#questionModal').modal('hide');
                         location.reload();
                     },
                     error: function (xhr, status, error) {
-                        console.error("Error in creating a new question:", error);
+                        console.error("Error in creating a new question:", xhr);
+                        if (xhr.responseJSON.message === "Question already exists.") {
+                            duplicateQnAlert(xhr);
+                        }
                     }
                 });
 
             }
-            // Close the modal and reload the page
-            $('#questionModal').modal('hide');
+        }
+
+        function qnFormValidation(title, desc, categories, complexity) {
+            isValid = true;
+            
+            // Clear error messages first to reset
+            $(".error").text("");
+
+            // Check each field for empty input
+            if (title === "") {
+                $("#titleError").text("Title is required");
+                console.log("Title is required");
+                isValid = false;
+            }
+            
+            if (desc === "") {
+                $("#descError").text("Description is required");
+                console.log("Description is required");
+                isValid = false;
+            }
+
+            if (categories.length === 0) {
+                $("#categoryError").text("Category is required");
+                console.log("Category is required");
+                isValid = false;
+            }
+
+            if (complexity === null) {
+                $("#complexityError").text("Complexity is required");
+                console.log("Complexity is required");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function duplicateQnAlert() {
+            $('#form-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                $(this).css('display', 'none');
+            });
+            $('#form-alert').addClass('alert-danger');
+            $('#form-alert').append('<strong>Error!</strong> A question with this title already exists.');
         }
 
         $(".question-info-btn").on("click", function() {
