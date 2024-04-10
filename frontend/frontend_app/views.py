@@ -1,7 +1,7 @@
 from django.shortcuts import render
 import requests
 
-QUESTION_SERVICE_ENDPOINT = 'http://localhost:8080/api/questions'
+QUESTION_SERVICE_ENDPOINT = 'http://question-service:8080/api/questions'
 
 def render_frontend(request):
     response = requests.get(QUESTION_SERVICE_ENDPOINT)
