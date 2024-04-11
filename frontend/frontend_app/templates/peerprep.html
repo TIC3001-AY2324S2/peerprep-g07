@@ -1,0 +1,646 @@
+{% extends "base.html" %}
+
+{% block user_management %}
+    <div id="user-service-container">
+        <div class="container mb-5">
+            <!-- Alert -->
+            <div id="login-alert" class="alert" style="display: none;"></div>
+
+            <!-- Sign Up card -->
+            <div id="signup-card" class="row justify-content-center py-5" style="display: none;">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-5 px-md-5">
+                            <h1 class="card-title pb-3">Sign Up</h1>
+                            <form id="signup-form" class="d-grid">
+                                <!-- Username input -->
+                                <div class="row">
+                                    <div class="form-outline mb-4">
+                                        <input type="text" id="su-username" class="form-control" />
+                                        <label class="form-label" for="su-username">Username</label>
+                                    </div>
+                                </div>
+
+                                <!-- Email input -->
+                                <div class="form-outline mb-4">
+                                    <input type="email" id="su-email" class="form-control" />
+                                    <label class="form-label" for="su-email">Email address</label>
+                                </div>
+
+                                <!-- Password input -->
+                                <div class="form-outline mb-4">
+                                    <input type="password" id="su-password" class="form-control" />
+                                    <label class="form-label" for="su-password">Password</label>
+                                </div>
+
+                                <!-- Sign Up button -->
+                                <button type="submit" id="signup" class="btn btn-primary btn-block mb-4">
+                                    Sign up
+                                </button>
+
+                                <p>Already have an account? <a id="login-link" href="#">Login</a></p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login card -->
+            <div id="login-card" class="row justify-content-center py-5">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-5 px-md-5">
+                            <h1 class="card-title pb-3">Login</h1>
+                            <form id="login-form" class="d-grid">
+                                <!-- Email input -->
+                                <div class="form-outline mb-4">
+                                    <input type="email" id="l-email" class="form-control" />
+                                    <label class="form-label" for="l-email">Email address</label>
+                                </div>
+            
+                                <!-- Password input -->
+                                <div class="form-outline mb-4">
+                                    <input type="password" id="l-password" class="form-control" />
+                                    <label class="form-label" for="l-password">Password</label>
+                                </div>
+            
+                                <!-- Login button -->
+                                <button type="submit" id="login" class="btn btn-primary btn-block mb-4">
+                                    Login
+                                </button>
+
+                                <p>Don't have an account? <a id="signup-link" href="#">Sign Up</a></p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row pb-5" id="welcome-user" style="display: none !important;">
+                <div id="welcome-text" class="d-flex justify-content-center pt-5">
+                    <p class="text-white">Welcome, <span id="username-placeholder">User</span>.</p>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button id="logoutBtn" class="btn btn-primary shadow p-2 px-5">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mb-5">
+        <div class="d-flex justify-content-between mb-4">
+            <h1 class="fw-bold">Question Repository</h1>
+            <div class="d-flex align-self-center">
+                <button id="createQuestionBtn" class="btn btn-primary p-2">
+                    <i class="bi bi-plus-lg"></i>&ensp;Create a new question
+                </button>
+            </div>
+        </div>
+
+        <table id="question-table" class="table table-hover text-center text-muted">
+
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Complexity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for qn in questions %}
+                <tr>
+                    <td>{{ qn.title }}</td>
+                    <td>{{ qn.category|join:', ' }}</td>
+                    <td>{{ qn.complexity }}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm question-info-btn" data-question-id="{{ qn.id }}"><i class="bi bi-info-circle"></i></button>
+                        <button class="btn btn-warning btn-sm edit-question-btn" data-question-id="{{ qn.id }}"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn btn-danger btn-sm delete-question-btn" data-question-id="{{ qn.id }}"><i class="bi bi-trash-fill"></i></button>
+                    </td>
+                </tr>
+                {% endfor %}
+            <tbody>
+
+        </table>
+    </div>
+
+    <!-- Question Modal -->
+    <div id="questionModal" class="modal fade" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Create a New Question</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Alert -->
+                    <div id="form-alert" class="alert" style="display: none;"></div>
+                    <!-- Question Form -->
+                    <form id="questionForm">
+                        <input type="hidden" id="questionId" name="questionId">
+
+                        <div class="form-group">
+                            <label for="questionTitle">Title</label>
+                            <input type="text" class="form-control" id="questionTitle" required>
+                            <span class="error" id="titleError"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="questionDescription">Description</label>
+                            <textarea class="form-control" id="questionDescription" rows="3" required></textarea>
+                            <span class="error" id="descError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="questionCategory">Category</label>
+                            <div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="categoryDataStructures" value="Data Structures">
+                                    <label class="form-check-label" for="categoryDataStructures">
+                                        Data Structures
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="categoryAlgorithms" value="Algorithms">
+                                    <label class="form-check-label" for="categoryAlgorithms">
+                                        Algorithms
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="categoryStrings" value="Strings">
+                                    <label class="form-check-label" for="categoryStrings">
+                                        Strings
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="categoryBitManipulation" value="Bit Manipulation">
+                                    <label class="form-check-label" for="categoryBitManipulation">
+                                        Bit Manipulation
+                                    </label>
+                                </div>
+                            </div>
+                            <span class="error" id="categoryError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="questionComplexity">Complexity</label>
+                            <select class="form-control" id="questionComplexity" required>
+                                <option disabled selected hidden>Choose an option</option>
+                                <option value="Easy">Easy</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Hard">Hard</option>
+                            </select>
+                            <span class="error" id="complexityError"></span>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="submitQuestionBtn">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Info Modal -->
+    <div id="questionInfoModal" class="modal fade" tabindex="-1" aria-labelledby="questionInfoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Question Info</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5><strong>Title</strong></h5>
+                    <p id="qn-info-title"></p>
+                    <h5><strong>Description</strong></h5>
+                    <p id="qn-info-desc"></p>
+                    <h5><strong>Category</strong></h5>
+                    <p id="qn-info-category"></p>
+                    <h5><strong>Complexity</strong></h5>
+                    <p id="qn-info-complexity"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock user_management %}
+
+
+{% block style %}
+<style>
+    #user-service-container{
+        background: linear-gradient(to right, #7866ff, #b249df);
+    }
+    .card{
+        border-radius: 25px;
+    }
+    #welcome-text{
+        font-size: 5rem;
+        font-weight: 500;
+    }
+    .form-group{
+        padding-bottom: 2em;
+    }
+    .error{
+        color: red;
+    }
+</style>
+{% endblock style %}
+
+{% block script %}
+<script>
+    $(document).ready(function () {
+        console.log(localStorage);
+
+        // ******** USER SERVICE FUNCTIONS ********
+
+        var signupLink = $("#signup-link");
+        var loginLink = $("#login-link");
+        var signupCard = $("#signup-card");
+        var loginCard = $("#login-card");
+        var welcomeText = $("#welcome-user");
+
+        function toggleCards(card1, card2) {
+            if (card1.css('display') === "none") {
+                card1.css('display', 'flex');
+                card2.css('display', 'none');
+            } else {
+                card1.css('display', 'none');
+                card2.css('display', 'flex');
+            }
+        }
+
+        signupLink.on("click", function (event) {
+            event.preventDefault(); // Prevent the default link behavior
+            toggleCards(signupCard, loginCard);
+        });
+
+        loginLink.on("click", function (event) {
+            event.preventDefault(); // Prevent the default link behavior
+            toggleCards(signupCard, loginCard);
+        });
+
+        // Check if user is already logged in
+        function checkLoginStatus() {
+            var username = localStorage.getItem('username');
+            var token = localStorage.getItem('token');
+            
+            if (username && token) {
+                // User is logged in, display welcome message
+                displayWelcomeMessage(username);
+            } else {
+                // User is not logged in, show login form
+                loginCard.css('display', 'flex');
+                welcomeText.css('display', 'none');
+            }
+        }
+
+        // Call checkLoginStatus when the page loads
+        checkLoginStatus();
+
+        $("#signup-form").on("submit", function (event) {
+            var username = $("#su-username").val();
+            var email = $("#su-email").val();
+            var password = $("#su-password").val();
+
+            $.ajax({
+                url: "http://localhost:3001/users/",
+                type: "POST",
+                data: {
+                    username: username,
+                    email: email,
+                    password: password
+                },
+                success: function (response) {
+                    console.log("Success:", response);
+                    toggleCards(signupCard, loginCard);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    $('#login-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('#login-alert').addClass('alert-danger');
+                    $('#login-alert').append('<strong>Error!</strong> ' + error);
+                }
+            });
+            event.preventDefault();  // Prevents page from reloading (the default action)
+        });
+
+        $("#login-form").on("submit", function (event) {
+            var email = $("#l-email").val();
+            var password = $("#l-password").val();
+            console.log(email);
+            console.log(password);
+            $.ajax({
+                url: "http://localhost:3001/auth/login/",
+                type: "POST",
+                data: {
+                    email: email,
+                    password: password
+                },
+                success: function (response) {
+                    console.log("Success:", response);
+                    handleLogin(response.accessToken);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    $('#login-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('#login-alert').addClass('alert-danger');
+                    $('#login-alert').tappendext('<strong>Error!</strong> ' + error);
+                }
+            });
+            event.preventDefault();  // Prevents page from reloading (the default action)
+        });
+
+        function handleLogin(token) {
+            $.ajax({
+                url: "http://localhost:3001/auth/verify-token/",
+                method: "GET",
+                headers: {
+                    authorization: "Bearer " + token
+                },
+                success: function(response) {
+                    var username = response.verifiedUser.username;
+                    // Cache user information in localStorage
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('token', token);
+                    console.log(localStorage);
+                    // Show welcome text
+                    displayWelcomeMessage(username);
+                    console.log("Fetched user data: ", response);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: ", error);
+                }
+            });
+        }
+
+        // Display welcome message
+        function displayWelcomeMessage(username) {
+            $("#username-placeholder").text(username);
+            toggleCards(welcomeText, loginCard);
+        }
+
+        $("#logoutBtn").on("click", function (event) {
+            localStorage.removeItem('username');
+            localStorage.removeItem('token');
+            toggleCards(welcomeText, loginCard);
+            console.log(localStorage);
+        });
+        
+
+        // ******** QUESTION SERVICE FUNCTIONS ********
+
+        // Question Repo DataTable settings
+        $('#question-table').DataTable({
+            "iDisplayLength": 10,
+            "columnDefs": [{ width: '200px', targets: [3] }],
+            // "order": [[9, 'asc']],  // order by a specific column
+        });
+
+        var isEditMode = false;
+
+        // Create a new question
+        $("#createQuestionBtn").on("click", function() {
+            // Clear error messages if any
+            $(".error").text("");
+            
+            openModal();
+        });
+
+        function openModal() {
+            isEditMode = false;
+            $("#modalTitle").text("Create a New Question");
+            $("#submitQuestionBtn").text("Create");
+            $("#questionForm")[0].reset();
+            $('#questionModal').modal('show');
+        }
+        
+        // Update an existing question
+        $(".edit-question-btn").on("click", function() {
+            // Clear error messages if any
+            $(".error").text("");
+            
+            var questionId = $(this).data('question-id');
+            openEditModal(questionId);
+        });
+
+        function openEditModal(questionId) {            
+
+            isEditMode = true;
+            $("#modalTitle").text("Edit Question");
+            $("#submitQuestionBtn").text("Update");
+            $("#questionId").val(questionId);
+            
+            var questionTitle = "Sample Title"; 
+            var questionDescription = "Sample Description"; 
+            var questionCategories = "category1"; 
+            var questionComplexity = "medium";
+
+            $.ajax({
+                url: "http://localhost:8080/api/questions/" + questionId,
+                type: "GET",
+                success: function (response) {
+                    questionTitle = response.title;
+                    questionDescription = response.description;
+                    questionCategories = response.category;
+                    questionComplexity = response.complexity;
+                    console.log("Successfully retrieved question:", response.title);
+                    
+                    // Clear the form of all data first
+                    $("#questionForm")[0].reset();
+                    // Fill the form with the retrieved question data
+                    $("#questionTitle").val(questionTitle);
+                    $("#questionDescription").val(questionDescription);
+                    questionCategories.forEach(function(category) {
+                        $("#category" + category.replace(/\s/g, '')).prop("checked", true);
+                    });
+                    $("#questionComplexity").val(questionComplexity);
+                    // Show the populated modal
+                    $('#questionModal').modal('show');
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error in updating question:", error);
+                }
+            });
+        }
+
+        // Define what happens when the submitQuestionBtn is clicked
+        $("#submitQuestionBtn").on("click", function () {
+            console.log("isEditMode: " + isEditMode);
+            submitForm();
+        });
+
+        function submitForm() {
+            var title = $("#questionTitle").val();
+            var desc = $("#questionDescription").val();            
+            var complexity = $("#questionComplexity").val();
+
+            // Get the selected categories as an array
+            var selectedCategories = [];
+            $("#questionModal input[type='checkbox']:checked").each(function() {
+                selectedCategories.push($(this).val());
+            });
+
+            // Perform form validation
+            isValid = qnFormValidation(title, desc, selectedCategories, complexity);
+            if (!isValid) {
+                return;
+            }
+
+            if (isEditMode) {
+                // Update question details
+                var questionId = $("#questionId").val();
+
+                $.ajax({
+                    url: "http://localhost:8080/api/questions/" + questionId,
+                    type: "PUT",
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        title: title,
+                        description: desc,
+                        category: selectedCategories,
+                        complexity: complexity
+                    }),
+                    success: function (response) {
+                        console.log("Successfully updated question:", response);
+                        $('#questionModal').modal('hide');
+                        location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error in updating question:", error);
+                        if (xhr.responseJSON.message === "Question already exists.") {
+                            duplicateQnAlert(xhr);
+                        }
+                    }
+                });
+
+            } else {
+                // Create a new question
+                $.ajax({
+                    url: "http://localhost:8080/api/questions",
+                    type: "POST",
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        title: title,
+                        description: desc,
+                        category: selectedCategories,
+                        complexity: complexity
+                    }),
+                    success: function (response) {
+                        console.log("Successfully created a new question:", response);
+                        // Close the modal and reload the page
+                        $('#questionModal').modal('hide');
+                        location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error in creating a new question:", xhr);
+                        if (xhr.responseJSON.message === "Question already exists.") {
+                            duplicateQnAlert(xhr);
+                        }
+                    }
+                });
+
+            }
+        }
+
+        function qnFormValidation(title, desc, categories, complexity) {
+            isValid = true;
+            
+            // Clear error messages first to reset
+            $(".error").text("");
+
+            // Check each field for empty input
+            if (title === "") {
+                $("#titleError").text("Title is required");
+                console.log("Title is required");
+                isValid = false;
+            }
+            
+            if (desc === "") {
+                $("#descError").text("Description is required");
+                console.log("Description is required");
+                isValid = false;
+            }
+
+            if (categories.length === 0) {
+                $("#categoryError").text("Category is required");
+                console.log("Category is required");
+                isValid = false;
+            }
+
+            if (complexity === null) {
+                $("#complexityError").text("Complexity is required");
+                console.log("Complexity is required");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function duplicateQnAlert() {
+            $('#form-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                $(this).css('display', 'none');
+            });
+            $('#form-alert').addClass('alert-danger');
+            $('#form-alert').append('<strong>Error!</strong> A question with this title already exists.');
+        }
+
+        $(".question-info-btn").on("click", function() {
+            var questionId = $(this).data('question-id');
+
+            $.ajax({
+                url: "http://localhost:8080/api/questions/" + questionId,
+                type: "GET",
+                success: function (response) {
+                    questionTitle = response.title;
+                    questionDescription = response.description;
+                    questionCategories = response.category;
+                    questionComplexity = response.complexity;
+                    console.log("Successfully retrieved question:", response.title);
+                    
+                    // Fill the info modal with the retrieved question data
+                    $("#qn-info-title").text(questionTitle);
+                    $("#qn-info-desc").text(questionDescription);
+                    $("#qn-info-category").text(questionCategories);
+                    $("#qn-info-complexity").text(questionComplexity);
+
+                    // Show the populated modal
+                    $('#questionInfoModal').modal('show');
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error in retrieving question:", error);
+                }
+            });
+        });
+
+
+        $(".delete-question-btn").on("click", function (event) {
+            var questionId = $(this).data('question-id');
+            
+            $.ajax({
+                url: "http://localhost:8080/api/questions/" + questionId,
+                type: "DELETE",
+                success: function (response) {
+                    console.log(`Successfully deleted question (id: ${questionId}):`, response);
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.error(`Error in deleting question (id: ${questionId}):`, error);
+                }
+            });
+        });
+
+    });
+
+</script>
+{% endblock script %}
