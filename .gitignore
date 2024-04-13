@@ -3,4 +3,4 @@
 !question-service/backend/.env
 **/.idea
 **/__pycache__
-frontend/env
+frontend/myenv/

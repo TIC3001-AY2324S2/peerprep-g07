@@ -1,14 +1,20 @@
 const express = require('express')
 const app = express()
 const http = require('http')
+const cors = require('cors');
 const server = http.createServer(app)
 const { Server } = require('socket.io')
 const { v4 } = require('uuid')
+
+const allowedOrigins = ['http://127.0.0.1:8000', 'http://localhost:8000'];
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000"
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE"],
   }
 });
+
+app.use(cors())
 
 const { blueBright, greenBright, redBright, yellowBright } = require('chalk')
 
@@ -33,10 +39,10 @@ app.post('/create-room-with-user', async (req, res) => {
 // Socket event handlers
 io.on('connection', (socket) => {
   console.log(redBright('connected established', socket))
-  socket.on('CONNECTED_TO_ROOM', ({ username }) => {
-    console.log(redBright.bold('CONNECTED', username))
+  socket.on('CONNECTED_TO_ROOM', ({ roomID }) => {
+    console.log(redBright.bold('CONNECTED', roomID))
     socket.join(room.id);
-    room.users.push({ username, socketId: socket.id }); // Add socketId to the user object
+    room.users.push({ socketId: socket.id }); // Add socketId to the user object
     io.in(room.id).emit('ROOM:CONNECTION', room.users);
     socket.emit('CODE_UPDATED', room.code); // Send current code content to the newly connected user
   });

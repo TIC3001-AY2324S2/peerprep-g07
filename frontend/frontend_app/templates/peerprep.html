@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block user_management %}
+{% load render_bundle from webpack_loader %}
     <div id="user-service-container">
         <div class="container mb-5">
             <!-- Alert -->
@@ -229,6 +230,38 @@
         </div>
     </div>
 
+    <button id="editorButtonDummy" class="btn btn-primary p-2">
+        <i class="bi bi-plus-lg"></i>&ensp;Click to join an editor
+    </button>
+
+
+    <!-- Code Editor Modal -->
+    <div id="codeEditorModal" class="modal fade" tabindex="-1" aria-labelledby="codeEditorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Code Editor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h5><strong>Title</strong></h5>
+                    <p id="matched-qn-info-title"></p>
+                    <h5><strong>Description</strong></h5>
+                    <p id="matched-qn-info-desc"></p>
+                    <h5><strong>Category</strong></h5>
+                    <p id="matched-qn-info-category"></p>
+                    <h5><strong>Complexity</strong></h5>
+                    <p id="matched-qn-info-complexity"></p>
+                    <h1>Monaco Editor </h1>
+                    <div id="editor"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock user_management %}
 
 
@@ -254,9 +287,64 @@
 {% endblock style %}
 
 {% block script %}
-<script>
+
+<script>    
+
     $(document).ready(function () {
         console.log(localStorage);
+
+        // CODE EDITOR FUNCTIONS
+        $("#editorButtonDummy").on("click", ()=>{
+            var matchedQTitle = $("#matched-qn-info-title");
+            var matchedQDesc = $("#matched-qn-info-desc");
+            var matchedQCat = $("#matched-qn-info-category");
+            var matchedQCom = $("#matched-qn-info-complexity");
+
+            // given by the matching api
+            var category = "Strings"
+            var complexity = "Medium"
+            
+            $.ajax({
+                url: "http://localhost:8080/api/questions",
+                type: "GET",
+                success: function (response) {
+                    // get random question
+                    function checkResponse(question){
+                        return (question.category.includes(category) && complexity === question.complexity)
+                    }
+
+                    var filteredQns = response.filter(checkResponse)
+                    const randomIndex = Math.floor(Math.random() * filteredQns.length);
+                    var selectedQuestion = filteredQns[randomIndex]
+
+                    matchedQTitle.text(selectedQuestion.title);
+                    matchedQDesc.text(selectedQuestion.description);
+                    matchedQCat.text(selectedQuestion.category);
+                    matchedQCom.text(selectedQuestion.complexity);
+
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error in retrieving questions:", error);
+                }
+            }).then(()=>{
+                $.ajax({
+                    url: "http://localhost:4001/create-room-with-user",
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ "user1": 1, "user2" : 2}),
+                    success: (roomID)=>{
+                        fixedRoomID = 1234
+                        console.log("this is the room id returned:", roomID)
+                        $('#collaborate').click();
+                        $('#matched-roomID').text(0);
+                        $('#codeEditorModal').modal('show');
+                    }
+                })
+                    
+            });
+
+            event.preventDefault();
+        })
 
         // ******** USER SERVICE FUNCTIONS ********
 
@@ -310,7 +398,7 @@
             var password = $("#su-password").val();
 
             $.ajax({
-                url: "http://localhost:3001/users/",
+                url: "http://localhost:8001/users/",
                 type: "POST",
                 data: {
                     username: username,
@@ -339,7 +427,7 @@
             console.log(email);
             console.log(password);
             $.ajax({
-                url: "http://localhost:3001/auth/login/",
+                url: "http://localhost:8001/auth/login/",
                 type: "POST",
                 data: {
                     email: email,
@@ -355,7 +443,7 @@
                         $(this).css('display', 'none');
                     });
                     $('#login-alert').addClass('alert-danger');
-                    $('#login-alert').tappendext('<strong>Error!</strong> ' + error);
+                    $('#login-alert').appendtext('<strong>Error!</strong> ' + error);
                 }
             });
             event.preventDefault();  // Prevents page from reloading (the default action)
@@ -363,7 +451,7 @@
 
         function handleLogin(token) {
             $.ajax({
-                url: "http://localhost:3001/auth/verify-token/",
+                url: "http://localhost:8001/auth/verify-token/",
                 method: "GET",
                 headers: {
                     authorization: "Bearer " + token
@@ -616,6 +704,7 @@
 
                     // Show the populated modal
                     $('#questionInfoModal').modal('show');
+                    
                 },
                 error: function (xhr, status, error) {
                     console.error("Error in retrieving question:", error);
@@ -639,6 +728,7 @@
                 }
             });
         });
+
 
     });
 
