@@ -244,6 +244,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <p style="display: none;" id="matched-qn-id"></p>
                     <h5><strong>Title</strong></h5>
                     <p id="matched-qn-info-title"></p>
                     <h5><strong>Description</strong></h5>
@@ -299,7 +300,7 @@
             var matchedQDesc = $("#matched-qn-info-desc");
             var matchedQCat = $("#matched-qn-info-category");
             var matchedQCom = $("#matched-qn-info-complexity");
-
+            var matchedQid = $("#matched-qn-id");
             // given by the matching api
             var category = "Strings"
             var complexity = "Medium"
@@ -321,6 +322,8 @@
                     matchedQDesc.text(selectedQuestion.description);
                     matchedQCat.text(selectedQuestion.category);
                     matchedQCom.text(selectedQuestion.complexity);
+                    matchedQid.text(selectedQuestion._id);
+                    console.log("this is selected qn:", selectedQuestion)
 
                 },
                 error: function (xhr, status, error) {
@@ -328,14 +331,16 @@
                 }
             }).then(()=>{
                 $.ajax({
-                    url: "http://localhost:4001/create-room-with-user",
+                    url: "http://localhost:4001/api/collab",
                     type: 'POST',
                     contentType: 'application/json',
-                    data: JSON.stringify({ "user1": 1, "user2" : 2}),
+                    // users are also given by matching service api
+                    data: JSON.stringify({"users": [1, 2],  "questionID": matchedQid.text() }),
                     success: (roomID)=>{
-                        fixedRoomID = 1234
+                        console.log('matched QID: ',  matchedQid.text())
                         console.log("this is the room id returned:", roomID)
                         $('#collaborate').click();
+                        // Default room is room 0
                         $('#matched-roomID').text(0);
                         $('#codeEditorModal').modal('show');
                     }
