@@ -4,14 +4,15 @@ import MonacoEditor from 'react-monaco-editor';
 
 const socket = io('http://localhost:4001');
 
-const CodeEditor = () => {
+const CodeEditor = (room) => {
   const [code, setCode] = useState('');
   // const [username, setUsername] = useState('Nancy');
-  const [roomID, setRoomID] = useState(0);
+  //const [roomID, setRoomID] = useState(initialRoomID);
+  const [roomID, setRoomID] = useState(room);
   const [connectedUsers, setConnectedUsers] = useState([]);
 
   const handleCodeChange = (newCode, e) => {
-    console.log("codechange");
+    console.log("codechange in roomID:", roomID);
     setCode(newCode);
     socket.emit('CODE_CHANGED', newCode);
   };
@@ -23,14 +24,13 @@ const CodeEditor = () => {
 
   const handleCreateRoom = async () => {
     try {
-      //const response = await axios.post('http://localhost:4001/create-room-with-user', { username });
-      //const roomId = response.data.roomId;
-      //await handleConnection(username);
+      console.log("handleCreateRoom: ", roomID)
       await handleConnection(roomID); // Pass only username
     } catch (error) {
       console.error('Error creating room:', error);
     }
   };
+
 
   useEffect(() => {
     // Socket.IO event listeners
@@ -51,14 +51,6 @@ const CodeEditor = () => {
 
   return (
     <div>
-      <div>
-        <input
-          type="hidden"
-          id="matched-roomID"
-          value={roomID}
-          onChange={(e) => setRoomID(e.target.value)} // Update username state on change
-        />
-      </div>
       <div>
     </div>
       <button id="collaborate" style={{display: "none"}} onClick={handleCreateRoom}></button>
