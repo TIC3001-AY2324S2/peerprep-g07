@@ -1,5 +1,4 @@
 import React from 'react';
-import App from './components/App';
 import CodeEditor from './components/CodeEditor.jsx';
 import ReactDOM from 'react-dom';
 

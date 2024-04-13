@@ -5,6 +5,10 @@ const cors = require('cors');
 const server = http.createServer(app)
 const { Server } = require('socket.io')
 const { v4 } = require('uuid')
+const bodyParser = require('body-parser');
+
+const connectDB = require('./config/db')
+connectDB()
 
 const allowedOrigins = ['http://127.0.0.1:8000', 'http://localhost:8000'];
 const io = new Server(server, {
@@ -14,7 +18,9 @@ const io = new Server(server, {
   }
 });
 
+app.use(express.urlencoded({ extended: true }));
 app.use(cors())
+app.use(bodyParser.json())
 
 const { blueBright, greenBright, redBright, yellowBright } = require('chalk')
 
@@ -24,17 +30,12 @@ const room = { // for 1 room currently
   code: ''
 };
 
+app.use('/api/collab',require('./routes/collabRoutes'))
+
 app.get('/', (req, res) => {
   console.log(blueBright('test connection with /get'))
   res.send({ msg: 'hi' })
 })
-
-// Route to create a room and join as a user
-app.post('/create-room-with-user', async (req, res) => {
-  console.log(blueBright.bold('entered room with user'))
-  const roomId = v4();
-  res.status(201).send({ roomId });
-});
 
 // Socket event handlers
 io.on('connection', (socket) => {
@@ -72,3 +73,5 @@ io.on('connection', (socket) => {
 server.listen(4001, () => {
   console.log(greenBright.bold('listening on *:4001'))
 })
+
+module.exports = app
