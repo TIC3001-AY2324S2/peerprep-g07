@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block user_management %}
-    <!-- User service features -->
+{% load render_bundle from webpack_loader %}
     <div id="user-service-container">
         <div class="container mb-5">
             <!-- Alert -->
@@ -311,6 +311,39 @@
         </div>
     </div>
 
+    <button id="editorButtonDummy" class="btn btn-primary p-2">
+        <i class="bi bi-plus-lg"></i>&ensp;Click to join an editor
+    </button>
+
+
+    <!-- Code Editor Modal -->
+    <div id="codeEditorModal" class="modal fade" tabindex="-1" aria-labelledby="codeEditorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Code Editor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="display: none;" id="matched-qn-id"></p>
+                    <h5><strong>Title</strong></h5>
+                    <p id="matched-qn-info-title"></p>
+                    <h5><strong>Description</strong></h5>
+                    <p id="matched-qn-info-desc"></p>
+                    <h5><strong>Category</strong></h5>
+                    <p id="matched-qn-info-category"></p>
+                    <h5><strong>Complexity</strong></h5>
+                    <p id="matched-qn-info-complexity"></p>
+                    <h1>Monaco Editor </h1>
+                    <div id="editor"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock user_management %}
 
 
@@ -336,7 +369,9 @@
 {% endblock style %}
 
 {% block script %}
-<script>
+
+<script>    
+
     $(document).ready(function () {
         console.log(localStorage);
 
@@ -394,7 +429,7 @@
             var password = $("#su-password").val();
 
             $.ajax({
-                url: "http://localhost:3001/users/",
+                url: "http://localhost:8001/users/",
                 type: "POST",
                 data: {
                     username: username,
@@ -423,7 +458,7 @@
             console.log(email);
             console.log(password);
             $.ajax({
-                url: "http://localhost:3001/auth/login/",
+                url: "http://localhost:8001/auth/login/",
                 type: "POST",
                 data: {
                     email: email,
@@ -447,7 +482,7 @@
 
         function handleLogin(token) {
             $.ajax({
-                url: "http://localhost:3001/auth/verify-token/",
+                url: "http://localhost:8001/auth/verify-token/",
                 method: "GET",
                 headers: {
                     authorization: "Bearer " + token
@@ -711,6 +746,7 @@
 
                     // Show the populated modal
                     $('#questionInfoModal').modal('show');
+                    
                 },
                 error: function (xhr, status, error) {
                     console.error("Error in retrieving question:", error);
