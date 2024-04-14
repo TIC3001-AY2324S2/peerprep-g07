@@ -174,7 +174,7 @@
         <div class="d-flex justify-content-between mb-4">
             <h1 class="fw-bold">Question Repository</h1>
             <div class="d-flex align-self-center">
-                <button id="createQuestionBtn" class="btn btn-primary p-2">
+                <button id="createQuestionBtn" class="btn btn-primary p-2 admin-view">
                     <i class="bi bi-plus-lg"></i>&ensp;Create a new question
                 </button>
             </div>
@@ -187,7 +187,7 @@
                     <th>Title</th>
                     <th>Category</th>
                     <th>Complexity</th>
-                    <th>Actions</th>
+                    <th class="admin-view">Actions</th>
                 </tr>
             </thead>
 
@@ -197,7 +197,7 @@
                     <td>{{ qn.title }}</td>
                     <td>{{ qn.category|join:', ' }}</td>
                     <td>{{ qn.complexity }}</td>
-                    <td>
+                    <td class="admin-view">
                         <button class="btn btn-info btn-sm question-info-btn" data-question-id="{{ qn.id }}"><i class="bi bi-info-circle"></i></button>
                         <button class="btn btn-warning btn-sm edit-question-btn" data-question-id="{{ qn.id }}"><i class="bi bi-pencil-square"></i></button>
                         <button class="btn btn-danger btn-sm delete-question-btn" data-question-id="{{ qn.id }}"><i class="bi bi-trash-fill"></i></button>
@@ -375,6 +375,8 @@
 
     $(document).ready(function () {
         console.log(localStorage);
+        // Hide admin-only features
+        $(".admin-view").hide();
 
         // ************************ USER SERVICE FUNCTIONS ************************
 
@@ -408,16 +410,21 @@
         function checkLoginStatus() {
             var username = localStorage.getItem('username');
             var token = localStorage.getItem('token');
+            var isAdmin = localStorage.getItem('isAdmin');
             
             if (username && token) {
                 // User is logged in, display welcome message
                 displayWelcomeMessage(username);
                 $("#matchingContainer").css('display', 'block');
+                if (isAdmin === "true") {
+                    $(".admin-view").show();
+                }
             } else {
                 // User is not logged in, show login form
                 loginCard.css('display', 'flex');
                 welcomeText.css('display', 'none');
                 $("#matchingContainer").css('display', 'none');
+                $(".admin-view").hide();
             }
         }
 
@@ -499,6 +506,10 @@
                     localStorage.setItem('token', token);
                     // Show the matching button
                     $("#matchingContainer").css('display', 'block');
+                    // Show the admin features to admin users
+                    if (isAdmin) {
+                        $(".admin-view").show();
+                    }
                     console.log(localStorage);
                     // Show welcome text
                     displayWelcomeMessage(username);
@@ -524,6 +535,8 @@
             localStorage.removeItem('token');
             // Hide the matching button
             $("#matchingContainer").css('display', 'none');
+            // Hide the admin-only features
+            $(".admin-view").hide();
             toggleCards(welcomeText, loginCard);
             console.log(localStorage);
         });
