@@ -63,6 +63,7 @@ $("#editorButtonDummy").on("click", ()=>{
               console.log('matched QID: ',  matchedQid.text())
               console.log("this is the room id returned:", roomID._id)
               // Default room is room 0
+              $('#collaborate').click();
               $('#codeEditorModal').modal('show');
           }
       })
