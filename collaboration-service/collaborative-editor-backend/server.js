@@ -44,6 +44,7 @@ app.get('/', (req, res) => {
 io.on('connection', (socket) => {
   console.log(redBright('connected established', socket))
   socket.on('CONNECTED_TO_ROOM', ( roomID ) => {
+    console.log("ALL ROOMS CURRENTLY: ", rooms)
     console.log(redBright("connected_to_room: ", roomID))
 
     // roomid here is unique and given by the frontend from mongodb
@@ -84,20 +85,22 @@ io.on('connection', (socket) => {
 
 
   // handle the disconnect later
-  // socket.on('disconnect', () => {
-  //   const index = room.users.findIndex((user) => user.socketId === socket.id);
-  //   console.log(redBright('disconnected', room.users[index]));
-  //   if (index !== -1) {
-  //     room.users.splice(index, 1);
-  //     io.in(room.id).emit('ROOM:CONNECTION', room.users);
-  //   }
-  //   if (room.users.length === 0) {
-  //     console.log(redBright.bold('All users disconnected, closing room'));
-  //     // Clean up the room object
-  //     room.id = null;
-  //     room.code = '';
-  //   }
-  // });
+  socket.on('DISCONNECT', ( roomID ) => {
+    const currRoom = rooms.find(room => room.id === roomID);
+    const index = currRoom.users.findIndex((user) => user.socketId === socket.id);
+    const roomIndex = rooms.findIndex(room => room.id === roomID);
+    console.log("room index: ", roomIndex)
+    if (index !== -1) {
+      currRoom.users.splice(index, 1);
+      // io.in(room.id).emit('ROOM:CONNECTION', room.users);
+      console.log(redBright.bold('Removing, closing room'));
+    }
+    if (currRoom.users.length === 0) {
+      // Clean up the room object
+      console.log(redBright.bold('All users disconnected, removing old room', rooms[roomIndex], 'remaining rooms:', rooms.length));
+      rooms.splice(roomIndex, 1)
+    }
+  });
 });
 
 server.listen(4001, () => {

@@ -1,12 +1,14 @@
 const amqp = require('amqplib');
+const { v4 } = require('uuid')
 
 const matchUsers = async (req, res) => {
     try {
       const { userId, username, topic, difficulty } = req.body;
-  
+
       // Connect to RabbitMQ
       const connection = await amqp.connect('amqp://localhost');
       const channel = await connection.createChannel();
+      const matchid = v4();
   
       // Declare the exchange and queue
       const exchangeName = 'matching_exchange';
@@ -18,7 +20,7 @@ const matchUsers = async (req, res) => {
       await channel.bindQueue(queue, exchangeName, queueName);
   
       // Publish the user's request to the exchange
-      channel.publish(exchangeName, queueName, Buffer.from(JSON.stringify({ userId, username, topic, difficulty })));
+      channel.publish(exchangeName, queueName, Buffer.from(JSON.stringify({ matchid, userId, username, topic, difficulty })));
   
       let messageBuffer = [];
   
@@ -41,6 +43,7 @@ const matchUsers = async (req, res) => {
                 console.log('Messages:', messageBuffer);
                 // Acknowledge both messages
                 // channel.ackAll();
+                // create a match id
                 resolve(messageBuffer);
                 // Reset messageBuffer for next batch
                 messageBuffer = [];
