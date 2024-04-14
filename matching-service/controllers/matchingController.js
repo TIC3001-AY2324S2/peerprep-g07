@@ -15,7 +15,7 @@ const matchUsers = async (req, res) => {
       await channel.assertExchange(exchangeName, 'direct', { durable: false });
   
       const queueName = topic.replace(/ /g, '_') + "_" + difficulty;
-      const { queue } = await channel.assertQueue(queueName, { messageTtl: 5000, maxLength: 2 });
+      const { queue } = await channel.assertQueue(queueName, { messageTtl: 5000, maxLength: 2, durable: false });
   
       await channel.bindQueue(queue, exchangeName, queueName);
   

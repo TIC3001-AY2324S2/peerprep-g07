@@ -39,7 +39,7 @@ app.use((req, res, next) => {
 });
 
 // use the router to handle requests 
-// at http://localhost:3002/api/match
+// at http://localhost:3002/match
 app.use('/match', require('./routes/matchingRoutes'))
 
 // Handle When No Route Match Is Found
