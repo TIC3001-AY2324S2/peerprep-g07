@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block user_management %}
+    <!-- User service features -->
     <div id="user-service-container">
         <div class="container mb-5">
             <!-- Alert -->
@@ -87,6 +88,87 @@
         </div>
     </div>
 
+    <!-- Matching Service Features -->
+    <div id="matchingContainer" class="container mb-5">
+        <div class="d-flex justify-content-center">
+            <h1 class="fw-bold mx-4">Find a peer!</h1>
+            <div class="d-flex align-self-center">
+                <button id="startMatchingBtn" class="btn btn-info p-3" data-bs-toggle="modal" data-bs-target="#matchingModal">
+                    Start Matching
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matching Modal -->
+    <div id="matchingModal" class="modal fade" tabindex="-1" aria-labelledby="matchingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Find a match</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- View for Matching Form -->
+                    <div id="matchingForm">
+                        <form>
+                            <div class="form-group">
+                                <label for="matchingTopic">Topic</label>
+                                <select class="form-control" id="matchingTopic" required>
+                                    <option disabled selected hidden>Choose an option</option>
+                                    <option value="Data Structures">Data Structures</option>
+                                    <option value="Algorithms">Algorithms</option>
+                                    <option value="Strings">Strings</option>
+                                    <option value="Bit Manipulation">Bit Manipulation</option>
+                                </select>
+                                <span class="error" id="matchingTopicError"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="matchingDifficulty">Difficulty</label>
+                                <select class="form-control" id="matchingDifficulty" required>
+                                    <option disabled selected hidden>Choose an option</option>
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                                <span class="error" id="matchingDifficultyError"></span>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="findMatchBtn">Find match!</button>
+                        </form>
+                    </div>
+
+                    <!-- View for Loading Screen while matching -->
+                    <div id="loadingFeedback" class="row justify-content-center" style="display: none;">
+                        <div class="spinner-border m-5" role="status"></div>
+                        <div class="d-flex justify-content-center">
+                            <p>Looking for a match... <span id="timer">30</span>s</p>
+                        </div>
+                    </div>
+
+                    <!-- View for Match Found -->
+                    <div id="matchFound" class="row" style="display: none;">
+                        <div class="d-flex justify-content-center">
+                            <h3>Match found!</h3>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <i id="player1" class="bi bi-person-fill display-1 m-5"></i>
+                            <i id="player2" class="bi bi-person-fill display-1 m-5"></i>
+                        </div>
+                    </div>
+
+                    <!-- View for Match Not Found -->
+                    <div id="matchNotFound" class="row" style="display: none;">
+                        <div class="d-flex justify-content-center">
+                            <h3>No match found. Try again later.</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Service Features -->
     <div class="container mb-5">
         <div class="d-flex justify-content-between mb-4">
             <h1 class="fw-bold">Question Repository</h1>
@@ -258,7 +340,7 @@
     $(document).ready(function () {
         console.log(localStorage);
 
-        // ******** USER SERVICE FUNCTIONS ********
+        // ************************ USER SERVICE FUNCTIONS ************************
 
         var signupLink = $("#signup-link");
         var loginLink = $("#login-link");
@@ -294,10 +376,12 @@
             if (username && token) {
                 // User is logged in, display welcome message
                 displayWelcomeMessage(username);
+                $("#matchingContainer").css('display', 'block');
             } else {
                 // User is not logged in, show login form
                 loginCard.css('display', 'flex');
                 welcomeText.css('display', 'none');
+                $("#matchingContainer").css('display', 'none');
             }
         }
 
@@ -369,10 +453,16 @@
                     authorization: "Bearer " + token
                 },
                 success: function(response) {
+                    var userId = response.verifiedUser.id;
                     var username = response.verifiedUser.username;
+                    var isAdmin = response.verifiedUser.isAdmin;
                     // Cache user information in localStorage
+                    localStorage.setItem('userId', userId);
                     localStorage.setItem('username', username);
+                    localStorage.setItem('isAdmin', isAdmin);
                     localStorage.setItem('token', token);
+                    // Show the matching button
+                    $("#matchingContainer").css('display', 'block');
                     console.log(localStorage);
                     // Show welcome text
                     displayWelcomeMessage(username);
@@ -391,14 +481,19 @@
         }
 
         $("#logoutBtn").on("click", function (event) {
+            // Remove user information from localStorage
+            localStorage.removeItem('userId');
             localStorage.removeItem('username');
+            localStorage.removeItem('isAdmin');
             localStorage.removeItem('token');
+            // Hide the matching button
+            $("#matchingContainer").css('display', 'none');
             toggleCards(welcomeText, loginCard);
             console.log(localStorage);
         });
         
 
-        // ******** QUESTION SERVICE FUNCTIONS ********
+        // ************************ QUESTION SERVICE FUNCTIONS ************************
 
         // Question Repo DataTable settings
         $('#question-table').DataTable({
@@ -640,6 +735,105 @@
             });
         });
 
+        // ************************ MATCHING SERVICE FUNCTIONS ************************
+
+        $("#startMatchingBtn").on("click", function (event) {
+            $('#matchingModal').modal('show');
+            $("#matchingForm").css('display', 'block');
+            $("#loadingFeedback").css('display', 'none');
+            $("#matchFound").css('display', 'none');
+            $("#matchNotFound").css('display', 'none');
+        });
+        
+        $("#matchingForm").on("submit", function (event) {
+            var userId = localStorage.getItem("userId");
+            var username = localStorage.getItem("username");
+            var topic = $("#matchingTopic").val();
+            var difficulty = $("#matchingDifficulty").val();
+            console.log(topic);
+            console.log(difficulty);
+
+            // Perform form validation
+            isValid = matchingFormValidation(topic, difficulty);
+            if (!isValid) {
+                event.preventDefault();
+                return;
+            }
+            
+            // Show loading spinner and start the timer on the matching modal
+            $("#loadingFeedback").css('display', 'flex');
+            $("#matchingForm").css('display', 'none');
+            startTimer();
+            
+            $.ajax({
+                url: "http://localhost:3002/match",
+                type: "POST",
+                timeout: 5000,
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    userId: userId,
+                    username: username,
+                    topic: topic,
+                    difficulty: difficulty
+                }),
+                success: function (response) {
+                    console.log("Success:", response);
+                    $("#player1").text(response.matchedUsers[0].username)
+                    $("#player2").text(response.matchedUsers[1].username)
+                    // Display Match Found view in matching modal
+                    $("#loadingFeedback").css('display', 'none');
+                    $("#matchFound").css('display', 'flex');
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    $("#loadingFeedback").css('display', 'none');
+                    $("#matchNotFound").css('display', 'flex');
+                }
+            });
+            event.preventDefault();  // Prevents page from reloading (the default action)
+        });
+
+        function matchingFormValidation(topic, difficulty) {
+            isValid = true;
+            
+            // Clear error messages first to reset
+            $(".error").text("");
+
+            // Check each field for empty input
+            if (topic === null) {
+                $("#matchingTopicError").text("Topic is required");
+                console.log("Topic is required");
+                isValid = false;
+            }
+
+            if (difficulty === null) {
+                $("#matchingDifficultyError").text("Difficulty is required");
+                console.log("Difficulty is required");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function startTimer() {
+            // Initialize timer value
+            var timerValue = 30;
+
+            // Display initial timer value
+            $('#timer').text(timerValue);
+
+            // Function to update timer every second
+            var countdown = setInterval(function() {
+                timerValue--;
+                $('#timer').text(timerValue);
+
+                if (timerValue <= 0) {
+                    clearInterval(countdown);
+                    $('#timer').text('0');
+                }
+            }, 1000); // Update timer every 1000ms (1 second)
+        }
+    
     });
 
 </script>
