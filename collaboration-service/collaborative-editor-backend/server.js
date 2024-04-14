@@ -25,10 +25,13 @@ app.use(bodyParser.json())
 const { blueBright, greenBright, redBright, yellowBright } = require('chalk')
 
 const room = { // for 1 room currently
-  id: v4(),
+  id: '',
   users: [],
   code: ''
 };
+
+// rooms to manage separation of every room
+const rooms = [];
 
 app.use('/api/collab',require('./routes/collabRoutes'))
 
@@ -40,34 +43,61 @@ app.get('/', (req, res) => {
 // Socket event handlers
 io.on('connection', (socket) => {
   console.log(redBright('connected established', socket))
-  socket.on('CONNECTED_TO_ROOM', ({ roomID }) => {
-    console.log(redBright.bold('CONNECTED', roomID))
-    socket.join(room.id);
-    room.users.push({ socketId: socket.id }); // Add socketId to the user object
-    io.in(room.id).emit('ROOM:CONNECTION', room.users);
-    socket.emit('CODE_UPDATED', room.code); // Send current code content to the newly connected user
+  socket.on('CONNECTED_TO_ROOM', ( roomID ) => {
+    console.log(redBright("connected_to_room: ", roomID))
+
+    // roomid here is unique and given by the frontend from mongodb
+    // check if user already has a room 
+    const currRoom = rooms.find(room => room.id === roomID);
+
+    if (currRoom){
+      if (!currRoom.users.some(user => user.socketId === socket.id)){
+        socket.join(roomID);
+        currRoom.users.push({ socketId: socket.id })
+      }
+      socket.emit('CODE_UPDATED', currRoom.code);
+    }
+    else{
+      room.id = roomID
+      room.users.push({ socketId: socket.id })
+      room.code = ''
+      rooms.push(room)
+      socket.emit('CODE_UPDATED', room.code);
+      socket.join(roomID);
+    }
+  
+    // io.in(room.id).emit('ROOM:CONNECTION', room.users);
+
+    // socket.emit('CODE_UPDATED', currRoom.code); // Send current code content to the newly connected user
   });
 
-  socket.on('CODE_CHANGED', (newCode) => {
-    console.log(yellowBright.bold('code changes'))
-    room.code = newCode; // Update the code content in the room
-    io.in(room.id).emit('CODE_UPDATED', newCode); // Broadcast the updated code to all users in the room
+  socket.on('CODE_CHANGED', (data) => {
+    const { roomID, newCode } = data;
+    const currRoom = rooms.find(room => room.id === roomID.room);
+    // only when there's a room
+    if (currRoom){
+      console.log(yellowBright.bold("there is a room and these are changes being made: ", newCode))
+      currRoom.code = newCode; // Update the code content in the room
+      io.in(currRoom.id).emit('CODE_UPDATED', newCode); // Broadcast the updated code
+    }    
   });
 
-  socket.on('disconnect', () => {
-    const index = room.users.findIndex((user) => user.socketId === socket.id);
-    console.log(redBright('disconnected', room.users[index]));
-    if (index !== -1) {
-      room.users.splice(index, 1);
-      io.in(room.id).emit('ROOM:CONNECTION', room.users);
-    }
-    if (room.users.length === 0) {
-      console.log(redBright.bold('All users disconnected, closing room'));
-      // Clean up the room object
-      room.id = null;
-      room.code = '';
-    }
-  });
+
+  // handle the disconnect later
+  // socket.on('disconnect', () => {
+  //   const index = room.users.findIndex((user) => user.socketId === socket.id);
+  //   console.log(redBright('disconnected', room.users[index]));
+  //   if (index !== -1) {
+  //     room.users.splice(index, 1);
+  //     io.in(room.id).emit('ROOM:CONNECTION', room.users);
+  //   }
+  //   if (room.users.length === 0) {
+  //     console.log(redBright.bold('All users disconnected, closing room'));
+  //     // Clean up the room object
+  //     room.id = null;
+  //     room.code = '';
+  //   }
+  // });
 });
 
 server.listen(4001, () => {

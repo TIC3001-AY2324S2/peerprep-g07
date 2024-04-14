@@ -6,25 +6,21 @@ const socket = io('http://localhost:4001');
 
 const CodeEditor = (room) => {
   const [code, setCode] = useState('');
-  // const [username, setUsername] = useState('Nancy');
-  //const [roomID, setRoomID] = useState(initialRoomID);
   const [roomID, setRoomID] = useState(room);
   const [connectedUsers, setConnectedUsers] = useState([]);
 
   const handleCodeChange = (newCode, e) => {
-    console.log("codechange in roomID:", roomID);
     setCode(newCode);
-    socket.emit('CODE_CHANGED', newCode);
+    socket.emit('CODE_CHANGED', {roomID: roomID, newCode: newCode});
   };
 
   const handleConnection = (roomID) => {
-    socket.emit('CONNECTED_TO_ROOM', { roomID });
-    console.log('CONNECTED_TO_ROOM', { roomID });
+    socket.emit('CONNECTED_TO_ROOM', { roomID }.roomID.room );
+    console.log('CONNECTED_TO_ROOM', { roomID }.roomID.room );
   };
 
   const handleCreateRoom = async () => {
     try {
-      console.log("handleCreateRoom: ", roomID)
       await handleConnection(roomID); // Pass only username
     } catch (error) {
       console.error('Error creating room:', error);
