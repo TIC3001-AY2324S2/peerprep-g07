@@ -151,6 +151,7 @@
                         <div class="d-flex justify-content-center">
                             <h3>Match found!</h3>
                         </div>
+                        <p hidden="true" id="matchSeed"></p>
                         <div class="d-flex justify-content-center">
                             <i id="player1" class="bi bi-person-fill display-1 m-5"></i>
                             <i id="player2" class="bi bi-person-fill display-1 m-5"></i>
@@ -304,16 +305,16 @@
                     <h5><strong>Complexity</strong></h5>
                     <p id="qn-info-complexity"></p>
                 </div>
-                <div class="modal-footer">
+                <!-- <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>
 
-    <button id="editorButtonDummy" class="btn btn-primary p-2">
+    <!-- <button id="editorButtonDummy" class="btn btn-primary p-2">
         <i class="bi bi-plus-lg"></i>&ensp;Click to join an editor
-    </button>
+    </button> -->
 
 
     <!-- Code Editor Modal -->
@@ -772,103 +773,6 @@
         });
 
         // ************************ MATCHING SERVICE FUNCTIONS ************************
-
-        $("#startMatchingBtn").on("click", function (event) {
-            $('#matchingModal').modal('show');
-            $("#matchingForm").css('display', 'block');
-            $("#loadingFeedback").css('display', 'none');
-            $("#matchFound").css('display', 'none');
-            $("#matchNotFound").css('display', 'none');
-        });
-        
-        $("#matchingForm").on("submit", function (event) {
-            var userId = localStorage.getItem("userId");
-            var username = localStorage.getItem("username");
-            var topic = $("#matchingTopic").val();
-            var difficulty = $("#matchingDifficulty").val();
-            console.log(topic);
-            console.log(difficulty);
-
-            // Perform form validation
-            isValid = matchingFormValidation(topic, difficulty);
-            if (!isValid) {
-                event.preventDefault();
-                return;
-            }
-            
-            // Show loading spinner and start the timer on the matching modal
-            $("#loadingFeedback").css('display', 'flex');
-            $("#matchingForm").css('display', 'none');
-            startTimer();
-            
-            $.ajax({
-                url: "http://localhost:3002/match",
-                type: "POST",
-                timeout: 5000,
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    userId: userId,
-                    username: username,
-                    topic: topic,
-                    difficulty: difficulty
-                }),
-                success: function (response) {
-                    console.log("Success:", response);
-                    $("#player1").text(response.matchedUsers[0].username)
-                    $("#player2").text(response.matchedUsers[1].username)
-                    // Display Match Found view in matching modal
-                    $("#loadingFeedback").css('display', 'none');
-                    $("#matchFound").css('display', 'flex');
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error:", error);
-                    $("#loadingFeedback").css('display', 'none');
-                    $("#matchNotFound").css('display', 'flex');
-                }
-            });
-            event.preventDefault();  // Prevents page from reloading (the default action)
-        });
-
-        function matchingFormValidation(topic, difficulty) {
-            isValid = true;
-            
-            // Clear error messages first to reset
-            $(".error").text("");
-
-            // Check each field for empty input
-            if (topic === null) {
-                $("#matchingTopicError").text("Topic is required");
-                console.log("Topic is required");
-                isValid = false;
-            }
-
-            if (difficulty === null) {
-                $("#matchingDifficultyError").text("Difficulty is required");
-                console.log("Difficulty is required");
-                isValid = false;
-            }
-
-            return isValid;
-        }
-
-        function startTimer() {
-            // Initialize timer value
-            var timerValue = 30;
-
-            // Display initial timer value
-            $('#timer').text(timerValue);
-
-            // Function to update timer every second
-            var countdown = setInterval(function() {
-                timerValue--;
-                $('#timer').text(timerValue);
-
-                if (timerValue <= 0) {
-                    clearInterval(countdown);
-                    $('#timer').text('0');
-                }
-            }, 1000); // Update timer every 1000ms (1 second)
-        }
     
     });
 
