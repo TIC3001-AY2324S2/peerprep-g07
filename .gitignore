@@ -1,6 +1,4 @@
 **/node_modules
-**/.env
-!question-service/backend/.env
 **/.idea
 **/__pycache__
 frontend/env
