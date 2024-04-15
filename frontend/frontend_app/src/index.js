@@ -50,7 +50,7 @@ function matchingFormValidation(topic, difficulty) {
 
 function startTimer() {
     // Initialize timer value
-    var timerValue = 30;
+    var timerValue = 5;
 
     // Display initial timer value
     $('#timer').text(timerValue);

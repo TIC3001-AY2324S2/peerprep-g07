@@ -17,6 +17,7 @@
                                 <!-- Username input -->
                                 <div class="row">
                                     <div class="form-outline mb-4">
+                                        <span class="error" id="su-usernameError"></span>
                                         <input type="text" id="su-username" class="form-control" />
                                         <label class="form-label" for="su-username">Username</label>
                                     </div>
@@ -24,12 +25,14 @@
 
                                 <!-- Email input -->
                                 <div class="form-outline mb-4">
+                                    <span class="error" id="su-emailError"></span>
                                     <input type="email" id="su-email" class="form-control" />
                                     <label class="form-label" for="su-email">Email address</label>
                                 </div>
 
                                 <!-- Password input -->
                                 <div class="form-outline mb-4">
+                                    <span class="error" id="su-passwordError"></span>
                                     <input type="password" id="su-password" class="form-control" />
                                     <label class="form-label" for="su-password">Password</label>
                                 </div>
@@ -55,12 +58,14 @@
                             <form id="login-form" class="d-grid">
                                 <!-- Email input -->
                                 <div class="form-outline mb-4">
+                                    <span class="error" id="l-emailError"></span>
                                     <input type="email" id="l-email" class="form-control" />
                                     <label class="form-label" for="l-email">Email address</label>
                                 </div>
             
                                 <!-- Password input -->
                                 <div class="form-outline mb-4">
+                                    <span class="error" id="l-passwordError"></span>
                                     <input type="password" id="l-password" class="form-control" />
                                     <label class="form-label" for="l-password">Password</label>
                                 </div>
@@ -77,12 +82,53 @@
                 </div>
             </div>
 
+            <!-- Welcome card -->
             <div class="row pb-5" id="welcome-user" style="display: none !important;">
                 <div id="welcome-text" class="d-flex justify-content-center pt-5">
                     <p class="text-white">Welcome, <span id="username-placeholder">User</span>.</p>
+                    <!-- <div class="d-flex align-self-center m-3">
+                        <button id="editUserBtn" class="btn btn-light"><i class="bi bi-pencil"></i></button>
+                    </div> -->
                 </div>
                 <div class="d-flex justify-content-center">
                     <button id="logoutBtn" class="btn btn-primary shadow p-2 px-5">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="userEditModal" class="modal fade" tabindex="-1" aria-labelledby="userEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">User Info</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="userEditForm">
+                        <input type="hidden" id="userId" name="userId">
+
+                        <div class="form-group">
+                            <label for="userUsername">Username</label>
+                            <input type="text" class="form-control" id="userUsername" required>
+                            <span class="error" id="userUsernameError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userEmail">Email</label>
+                            <input type="text" class="form-control" id="userEmail" required>
+                            <span class="error" id="userEmailError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userPassword">Password</label>
+                            <input type="text" class="form-control" id="userPassword" required>
+                            <span class="error" id="userPasswordError"></span>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="findMatchBtn">Update</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -142,7 +188,7 @@
                     <div id="loadingFeedback" class="row justify-content-center" style="display: none;">
                         <div class="spinner-border m-5" role="status"></div>
                         <div class="d-flex justify-content-center">
-                            <p>Looking for a match... <span id="timer">30</span>s</p>
+                            <p>Looking for a match... <span id="timer">5</span>s</p>
                         </div>
                     </div>
 
@@ -436,6 +482,13 @@
             var email = $("#su-email").val();
             var password = $("#su-password").val();
 
+            // Perform form validation
+            isValid = signupFormValidation(username, email, password);
+            if (!isValid) {
+                event.preventDefault();
+                return;
+            }
+
             $.ajax({
                 url: "http://localhost:3001/users/",
                 type: "POST",
@@ -460,11 +513,46 @@
             event.preventDefault();  // Prevents page from reloading (the default action)
         });
 
+        function signupFormValidation(username, email, password) {
+            isValid = true;
+            
+            // Clear error messages first to reset
+            $(".error").text("");
+
+            // Check each field for empty input
+            if (username === "") {
+                $("#su-usernameError").text("Username is required");
+                console.log("Username is required");
+                isValid = false;
+            }
+
+            if (email === "") {
+                $("#su-emailError").text("Email is required");
+                console.log("Email is required");
+                isValid = false;
+            }
+            
+            if (password === "") {
+                $("#su-passwordError").text("Password is required");
+                console.log("Password is required");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
         $("#login-form").on("submit", function (event) {
             var email = $("#l-email").val();
             var password = $("#l-password").val();
             console.log(email);
-            console.log(password);
+
+            // Perform form validation
+            isValid = loginFormValidation(email, password);
+            if (!isValid) {
+                event.preventDefault();
+                return;
+            }
+
             $.ajax({
                 url: "http://localhost:3001/auth/login/",
                 type: "POST",
@@ -522,6 +610,28 @@
             });
         }
 
+        function loginFormValidation(email, password) {
+            isValid = true;
+            
+            // Clear error messages first to reset
+            $(".error").text("");
+
+            // Check each field for empty input
+            if (email === "") {
+                $("#l-emailError").text("Email is required");
+                console.log("Email is required");
+                isValid = false;
+            }
+            
+            if (password === "") {
+                $("#l-passwordError").text("Password is required");
+                console.log("Password is required");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
         // Display welcome message
         function displayWelcomeMessage(username) {
             $("#username-placeholder").text(username);
@@ -541,6 +651,128 @@
             toggleCards(welcomeText, loginCard);
             console.log(localStorage);
         });
+
+        // $("#editUserBtn").on("click", function (event) {
+        //     // Clear error messages if any
+        //     $(".error").text("");
+        //     // Open edit user modal
+        //     var userId = localStorage.getItem("userId");
+        //     openEditUserModal(userId);
+        // });
+
+        // function openEditUserModal(userId) {            
+
+        //     $("#userId").val(userId);
+            
+        //     var questionTitle = "Sample Title"; 
+        //     var questionDescription = "Sample Description"; 
+        //     var questionCategories = "category1"; 
+        //     var questionComplexity = "medium";
+
+        //     $.ajax({
+        //         url: "http://localhost:3001/users/",
+        //         type: "GET",
+        //         contentType: 'application/json',
+        //         data: JSON.stringify({
+        //             email: email
+        //         }),
+        //         success: function (response) {
+        //             questionTitle = response.username;
+        //             questionDescription = response.email;
+        //             questionCategories = response.password;
+        //             console.log("Successfully retrieved user:", response.username);
+                    
+        //             // Clear the form of all data first
+        //             $("#userEditForm")[0].reset();
+        //             // Fill the form with the retrieved question data
+        //             $("#questionTitle").val(questionTitle);
+        //             $("#questionDescription").val(questionDescription);
+        //             questionCategories.forEach(function(category) {
+        //                 $("#category" + category.replace(/\s/g, '')).prop("checked", true);
+        //             });
+        //             $("#questionComplexity").val(questionComplexity);
+        //             // Show the populated modal
+        //             $('#userEditModal').modal('show');
+        //         },
+        //         error: function (xhr, status, error) {
+        //             console.error("Error in updating question:", error);
+        //         }
+        //     });
+        // }
+
+        // // Define what happens when the submitQuestionBtn is clicked
+        // $("#submitQuestionBtn").on("click", function () {
+        //     console.log("isEditMode: " + isEditMode);
+        //     submitEditUserForm();
+        // });
+
+        // function submitEditUserForm() {
+        //     var title = $("#questionTitle").val();
+        //     var desc = $("#questionDescription").val();            
+        //     var complexity = $("#questionComplexity").val();
+
+        //     $.ajax({
+        //         url: "http://localhost:3001/users/",
+        //         type: "PATCH",
+        //         contentType: 'application/json',
+        //         data: JSON.stringify({
+        //             id: title,
+        //             username: desc,
+        //             email: selectedCategories,
+        //             password: complexity
+        //         }),
+        //         success: function (response) {
+        //             questionTitle = response.title;
+        //             questionDescription = response.description;
+        //             questionCategories = response.category;
+        //             questionComplexity = response.complexity;
+        //             console.log("Successfully retrieved question:", response.title);
+                    
+        //             // Clear the form of all data first
+        //             $("#questionForm")[0].reset();
+        //             // Fill the form with the retrieved question data
+        //             $("#questionTitle").val(questionTitle);
+        //             $("#questionDescription").val(questionDescription);
+        //             questionCategories.forEach(function(category) {
+        //                 $("#category" + category.replace(/\s/g, '')).prop("checked", true);
+        //             });
+        //             $("#questionComplexity").val(questionComplexity);
+        //             // Show the populated modal
+        //             $('#userEditModal').modal('show');
+        //         },
+        //         error: function (xhr, status, error) {
+        //             console.error("Error in updating question:", error);
+        //         }
+        //     });
+        // }
+
+        // function userEditFormValidation(username, email, password) {
+        //     isValid = true;
+            
+        //     // Clear error messages first to reset
+        //     $(".error").text("");
+
+        //     // Check each field for empty input
+        //     if (username === "") {
+        //         $("#userUsernameError").text("Username is required");
+        //         console.log("Username is required");
+        //         isValid = false;
+        //     }
+
+        //     if (email === "") {
+        //         $("#userEmailError").text("Email is required");
+        //         console.log("Email is required");
+        //         isValid = false;
+        //     }
+            
+        //     if (password === "") {
+        //         $("#userPasswordError").text("Password is required");
+        //         console.log("Password is required");
+        //         isValid = false;
+        //     }
+
+        //     return isValid;
+        // }
         
 
         // ************************ QUESTION SERVICE FUNCTIONS ************************
