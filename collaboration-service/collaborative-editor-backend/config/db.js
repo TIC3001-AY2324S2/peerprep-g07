@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 // function to start up and connect to MongoDB database
 const connectDB = async () => {
   try {
-    let MONGODB_URI="mongodb://127.0.0.1:27017/collaboration-service"
+    let MONGODB_URI="mongodb+srv://jacheo:jacheo123@peerprep.4isuadd.mongodb.net/?retryWrites=true&w=majority&appName=Peerprep"
       // attempt to connect to MongoDB database via the connection string specified in .env file
     // const con = await mongoose.connect(process.env.MONGODB_URI) // read from the .env file
     const con = await mongoose.connect(MONGODB_URI) // read from the .env file
