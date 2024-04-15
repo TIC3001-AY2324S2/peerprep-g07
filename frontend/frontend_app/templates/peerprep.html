@@ -187,7 +187,7 @@
                     <th>Title</th>
                     <th>Category</th>
                     <th>Complexity</th>
-                    <th class="admin-view">Actions</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
 
@@ -197,10 +197,10 @@
                     <td>{{ qn.title }}</td>
                     <td>{{ qn.category|join:', ' }}</td>
                     <td>{{ qn.complexity }}</td>
-                    <td class="admin-view">
+                    <td>
                         <button class="btn btn-info btn-sm question-info-btn" data-question-id="{{ qn.id }}"><i class="bi bi-info-circle"></i></button>
-                        <button class="btn btn-warning btn-sm edit-question-btn" data-question-id="{{ qn.id }}"><i class="bi bi-pencil-square"></i></button>
-                        <button class="btn btn-danger btn-sm delete-question-btn" data-question-id="{{ qn.id }}"><i class="bi bi-trash-fill"></i></button>
+                        <button class="btn btn-warning btn-sm edit-question-btn admin-view" data-question-id="{{ qn.id }}"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn btn-danger btn-sm delete-question-btn admin-view" data-question-id="{{ qn.id }}"><i class="bi bi-trash-fill"></i></button>
                     </td>
                 </tr>
                 {% endfor %}
