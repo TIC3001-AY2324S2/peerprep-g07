@@ -437,7 +437,7 @@
             var password = $("#su-password").val();
 
             $.ajax({
-                url: "http://localhost:8001/users/",
+                url: "http://localhost:3001/users/",
                 type: "POST",
                 data: {
                     username: username,
@@ -466,7 +466,7 @@
             console.log(email);
             console.log(password);
             $.ajax({
-                url: "http://localhost:8001/auth/login/",
+                url: "http://localhost:3001/auth/login/",
                 type: "POST",
                 data: {
                     email: email,
@@ -482,7 +482,8 @@
                         $(this).css('display', 'none');
                     });
                     $('#login-alert').addClass('alert-danger');
-                    $('#login-alert').append('<strong>Error!</strong> ' + error);
+                    $('#login-alert')
+                    $('#login-alert').empty().append('<strong>Error!</strong>&ensp;This user does not exist. Sign up to create an account.');
                 }
             });
             event.preventDefault();  // Prevents page from reloading (the default action)
@@ -490,7 +491,7 @@
 
         function handleLogin(token) {
             $.ajax({
-                url: "http://localhost:8001/auth/verify-token/",
+                url: "http://localhost:3001/auth/verify-token/",
                 method: "GET",
                 headers: {
                     authorization: "Bearer " + token
