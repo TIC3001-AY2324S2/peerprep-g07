@@ -6,7 +6,6 @@ const app = express();
 
 // use 3002 as a fallback if PORT is undefined in .env file
 const PORT = process.env.PORT || 3002
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || ['http://localhost:8000', 'http://127.0.0.1:8000'];
 
 // Import the cors middleware to enable CORS on the server
 const cors = require("cors");
@@ -37,20 +36,18 @@ const client = new Eureka({
   },
 })
 
-// allow URL-encoded data in request body to be parsed
-app.use(express.urlencoded({ extended: false }))
-// allow JSON data in request body to be parsed
-app.use(express.json())
+// app.options(
+//   '*',
+//   cors({
+//     origin: ['http://localhost:8000', 'http://127.0.0.1:8000'],
+//     credentials: true,
+//     optionsSuccessStatus: 200,
+//   }), 
+// )
+// app.use(cors())
 
-app.use(cors());
-app.options(
-  '*',
-  cors({
-    origin: ALLOWED_ORIGINS,
-    optionsSuccessStatus: 200,
-  }), 
-)
-app.use(cors())
+app.use(cors()); // config cors so that front-end can use
+// app.options("*", cors());
 
 // To handle CORS Errors
 app.use((req, res, next) => {
@@ -71,25 +68,29 @@ app.use((req, res, next) => {
   next();
 });
 
-// use the router to handle requests 
-// at http://localhost:3002/api/match
-app.use('/match', require('./routes/matchingRoutes'))
+// allow URL-encoded data in request body to be parsed
+app.use(express.urlencoded({ extended: false }))
+// allow JSON data in request body to be parsed
+app.use(express.json())
 
-// Handle When No Route Match Is Found
-app.use((req, res, next) => {
-  const error = new Error("Route Not Found");
-  error.status = 404;
-  next(error);
-});
+// To handle CORS Errors
+// app.use((req, res, next) => {
+//   res.header("Access-Control-Allow-Origin", "*"); // "*" -> Allow all links to access
 
-app.use((error, req, res, next) => {
-  res.status(error.status || 500);
-  res.json({
-    error: {
-      message: error.message,
-    },
-  });
-});
+//   res.header(
+//     "Access-Control-Allow-Headers",
+//     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+//   );
+
+//   // Browsers usually send this before PUT or POST Requests
+//   if (req.method === "OPTIONS") {
+//     res.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, PATCH");
+//     return res.status(200).json({});
+//   }
+
+//   // Continue Route Processing
+//   next();
+// });
 
 client.start(error=>{
   console.log(error || "matching-service registered!!")
@@ -97,6 +98,26 @@ client.start(error=>{
     res.json({ message: 'Hello World from matching-service!' })
   })
 })
+
+// use the router to handle requests 
+// at http://localhost:3002/api/match
+app.use('/match', require('./routes/matchingRoutes'))
+
+// Handle When No Route Match Is Found
+// app.use((req, res, next) => {
+//   const error = new Error("Route Not Found");
+//   error.status = 404;
+//   next(error);
+// });
+
+// app.use((error, req, res, next) => {
+//   res.status(error.status || 500);
+//   res.json({
+//     error: {
+//       message: error.message,
+//     },
+//   });
+// });
 
 // Start the server
 app.listen(PORT, () => {
