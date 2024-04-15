@@ -1,4 +1,5 @@
 'use strict';
+require('dotenv').config()
 const Eureka = require('eureka-js-client').Eureka;
 const express = require('express');
 const app = express();

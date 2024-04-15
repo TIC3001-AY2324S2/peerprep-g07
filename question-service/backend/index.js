@@ -41,7 +41,7 @@ const client = new Eureka({
 app.options(
   '*',
   cors({
-    origin: process.env.ALLOWED_ORIGINS,
+    origin: ['http://localhost:8000', 'http://127.0.0.1:8000'],
     optionsSuccessStatus: 200,
   }), 
 )
