@@ -1,14 +1,43 @@
+'use strict';
 const express = require('express')
 const app = express()
 const http = require('http')
 const cors = require('cors');
 const server = http.createServer(app)
 const { Server } = require('socket.io')
-const { v4 } = require('uuid')
 const bodyParser = require('body-parser');
+const Eureka = require('eureka-js-client').Eureka;
 
 const connectDB = require('./config/db')
 connectDB()
+
+const PORT = process.env.PORT || 4001
+
+const client = new Eureka({
+  instance: {
+    app: process.env.SERVICE || 'collaboration-service',
+    hostName: 'localhost',
+    ipAddr: process.env.LOCAL_IPADDR || '127.0.0.1',
+    statusPageUrl: 'http://localhost:8080/',
+    vipAddress: process.env.SERVICE || 'collaboration-service',
+    port: {
+      '$': PORT,
+      '@enabled': 'true',
+    },
+    dataCenterInfo: {
+      '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
+      name: 'MyOwn',
+    },
+    registerWithEureka: true,
+    fetchRegistry: true,
+  },
+  //retry 10 time for 3 minute 20 seconds.
+  eureka: {
+    host: process.env.EUREKA_HOST || 'localhost',
+    port: process.env.EUREKA_PORT || 8761,
+    servicePath: process.env.EUREKA_SERVICE_PATH || '/eureka/apps/',
+  },
+})
 
 const allowedOrigins = ['http://127.0.0.1:8000', 'http://localhost:8000'];
 const io = new Server(server, {
@@ -33,11 +62,13 @@ const room = { // for 1 room currently
 // rooms to manage separation of every room
 const rooms = [];
 
-app.use('/api/collab',require('./routes/collabRoutes'))
+app.use('/api/collab',require('./routes/collabRoutes'));
 
-app.get('/', (req, res) => {
-  console.log(blueBright('test connection with /get'))
-  res.send({ msg: 'hi' })
+client.start(error=>{
+  console.log(error || "collaboration-service registered!!")
+  app.get('/', (req, res) => {
+    res.send({ msg: 'Hello world from collaboration service!' })
+  })  
 })
 
 // Socket event handlers
@@ -103,7 +134,7 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(4001, () => {
+server.listen(PORT, () => {
   console.log(greenBright.bold('listening on *:4001'))
 })
 

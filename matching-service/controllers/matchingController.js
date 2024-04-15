@@ -1,12 +1,14 @@
 const amqp = require('amqplib');
 const { v4 } = require('uuid')
 
+const AMQPURL = process.env.AMQPURL || 'amqp://localhost';
+
 const matchUsers = async (req, res) => {
     try {
       const { userId, username, topic, difficulty } = req.body;
 
       // Connect to RabbitMQ
-      const connection = await amqp.connect('amqp://localhost');
+      const connection = await amqp.connect(AMQPURL);
       const channel = await connection.createChannel();
       const matchid = v4();
   

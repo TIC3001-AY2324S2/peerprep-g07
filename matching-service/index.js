@@ -1,8 +1,40 @@
+'use strict';
+const Eureka = require('eureka-js-client').Eureka;
 const express = require('express');
 const app = express();
 
+// use 3002 as a fallback if PORT is undefined in .env file
+const PORT = process.env.PORT || 3002
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS || ['http://localhost:8000', 'http://127.0.0.1:8000'];
+
 // Import the cors middleware to enable CORS on the server
 const cors = require("cors");
+
+const client = new Eureka({
+  instance: {
+    app: process.env.SERVICE || 'matching-service',
+    hostName: 'localhost',
+    ipAddr: process.env.LOCAL_IPADDR || '127.0.0.1',
+    statusPageUrl: 'http://localhost:3002/',
+    vipAddress: process.env.SERVICE || 'matching-service',
+    port: {
+      '$': PORT,
+      '@enabled': 'true',
+    },
+    dataCenterInfo: {
+      '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
+      name: 'MyOwn',
+    },
+    registerWithEureka: true,
+    fetchRegistry: true,
+  },
+  //retry 10 time for 3 minute 20 seconds.
+  eureka: {
+    host: process.env.EUREKA_HOST || 'localhost',
+    port: process.env.EUREKA_PORT || 8761,
+    servicePath: process.env.EUREKA_SERVICE_PATH || '/eureka/apps/',
+  },
+})
 
 // allow URL-encoded data in request body to be parsed
 app.use(express.urlencoded({ extended: false }))
@@ -13,7 +45,7 @@ app.use(cors());
 app.options(
   '*',
   cors({
-    origin: ['http://localhost:8000', 'http://127.0.0.1:8000'],
+    origin: ALLOWED_ORIGINS,
     optionsSuccessStatus: 200,
   }), 
 )
@@ -58,8 +90,12 @@ app.use((error, req, res, next) => {
   });
 });
 
-// use 3002 as a fallback if PORT is undefined in .env file
-const PORT = process.env.PORT || 3002
+client.start(error=>{
+  console.log(error || "matching-service registered!!")
+  app.get('/', (req, res) => {
+    res.json({ message: 'Hello World from matching-service!' })
+  })
+})
 
 // Start the server
 app.listen(PORT, () => {

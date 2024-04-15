@@ -1,12 +1,11 @@
 // import dependencies required for mongoose
+const dotenv = require('dotenv').config()
 const mongoose = require('mongoose')
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/collaboration-service"
 
 // function to start up and connect to MongoDB database
 const connectDB = async () => {
   try {
-    let MONGODB_URI="mongodb://127.0.0.1:27017/collaboration-service"
-      // attempt to connect to MongoDB database via the connection string specified in .env file
-    // const con = await mongoose.connect(process.env.MONGODB_URI) // read from the .env file
     const con = await mongoose.connect(MONGODB_URI) // read from the .env file
     console.log(`MongoDB Connected: ${con.connection.host}`)
   } catch (error) {
