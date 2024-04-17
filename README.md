@@ -1,5 +1,11 @@
 # CS3219-AY22-23-Project-Skeleton
 
+## Run containerised services
+
+1. Navigate to the folder containing the `docker-compose.yaml` file
+2. Run the command `docker-compose up -d`. This should spin up containers for User Service, Question Service, the Frontend application and MongoDB
+3. Access the Peerprep site at `http://127.0.0.1:8000/peerprep`
+
 ## User Service
 
 ### Quick Start
