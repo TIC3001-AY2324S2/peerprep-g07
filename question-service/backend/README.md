@@ -2,7 +2,7 @@
 
 ## Setting-up
 
-1. The `.env` file has set the service port to 8080 and uses a Cloud MongoDB URI with question data already populated in the Cloud MongoDB. If you wish to change the port number or change the MongoDB URI to a local one/another cloud MongoDB, please update the `.env` file.
+1. The `.env` file has set the service port to 8080 and uses a local MongoDB URI. If you wish to change the port number or the MongoDB URI, please update the `.env` file.
 
 2. No other extra setup is needed.
 
