@@ -439,7 +439,7 @@
                         $(this).css('display', 'none');
                     });
                     $('#login-alert').addClass('alert-danger');
-                    $('#login-alert').tappendext('<strong>Error!</strong> ' + error);
+                    $('#login-alert').text('<strong>Error!</strong> ' + error);
                 }
             });
             event.preventDefault();  // Prevents page from reloading (the default action)
