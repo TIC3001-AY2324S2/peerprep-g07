@@ -38,14 +38,14 @@ const client = new Eureka({
   },
 })
 
-app.options(
-  '*',
-  cors({
-    origin: ['http://localhost:8000', 'http://127.0.0.1:8000'],
-    optionsSuccessStatus: 200,
-  }), 
-)
-app.use(cors())
+// app.options(
+//   '*',
+//   cors({
+//     origin: ['http://localhost:8000', 'http://127.0.0.1:8000'],
+//     optionsSuccessStatus: 200,
+//   }), 
+// )
+// app.use(cors())
 
 app.use(express.json())
 

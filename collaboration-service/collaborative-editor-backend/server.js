@@ -48,8 +48,13 @@ const io = new Server(server, {
   }
 });
 
+// Use CORS middleware with specific origins
+// app.use(cors({
+//   origin: '*',
+//   methods: ["GET", "POST", "PUT", "DELETE"]
+// }));
+
 app.use(express.urlencoded({ extended: true }));
-app.use(cors())
 app.use(bodyParser.json())
 
 const { blueBright, greenBright, redBright, yellowBright } = require('chalk')

@@ -92,10 +92,34 @@ $("#matchingForm").on("submit", function (event) {
     $("#loadingFeedback").css('display', 'flex');
     $("#matchingForm").css('display', 'none');
     startTimer();
+
+    // $.ajax({
+    //     //url: "http://localhost:4001/api/collab",
+    //     url: "http://localhost:8765/collaboration-service/api/collab",
+    //     type: 'POST',
+    //     contentType: 'application/json',
+    //     // users are also given by matching service api
+    //     data: JSON.stringify({"users": ["randomplayer1", "randomplayer2"],  "questionID": "randomquestion-test" }),
+    //     success: (roomID)=>{
+    //         console.log("post using the 8765 is successful!!!")
+    //         renderReactComponent(roomID._id);
+    //         console.log("this is the room id returned:", roomID._id)
+    //         // Default room is room 0
+    //         $('#collaborate').click();
+    //         $('#codeEditorModal').modal('show');
+
+    //         $('#exitSession').on("click", ()=>{
+    //             console.log("exiting session...")
+    //             $('#matchingModal').modal('hide');
+    //             $('#codeEditorModal').modal('hide');
+    //         })
+
+    //     }
+    // })
     
     $.ajax({
-        url: "http://localhost:3002/match",
-        //url: "http://localhost:8765/matching-service/match",
+        //url: "http://localhost:3002/match",
+        url: "http://localhost:8765/matching-service/match",
         type: "POST",
         timeout: 5000,
         contentType: 'application/json',
@@ -164,8 +188,8 @@ $("#matchingForm").on("submit", function (event) {
                 console.log("this is selected qn:", selectedQuestion)
 
                 $.ajax({
-                    url: "http://localhost:4001/api/collab",
-                    //url: "http://localhost:8765/collaboration-service/api/collab",
+                    //url: "http://localhost:4001/api/collab",
+                    url: "http://localhost:8765/collaboration-service/api/collab",
                     type: 'POST',
                     contentType: 'application/json',
                     // users are also given by matching service api

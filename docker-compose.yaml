@@ -1,13 +1,27 @@
 version: "3.8"
 
 services:
-  mongodb:
-    image: mongodb/mongodb-community-server:7.0.7-ubuntu2204
-    ports: 
-      - 27017:27017
+  service-registry:
+    build:
+      context: ./service-discovery
+      dockerfile: Dockerfile
+    container_name: service-registry
+    ports:
+      - 8761:8761
     networks:
       - peerprepnet
-    container_name: mongodb
+
+  api-service:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - 8765:8765
+    depends_on:
+      - service-registry
+    networks:
+      - peerprepnet
   
   user-service:
     build:
@@ -17,9 +31,9 @@ services:
       - ./user-service/.env
     container_name: user-service
     ports:
-      - 8001:8001
+      - 3001:3001
     depends_on:
-      - mongodb
+      - service-registry
     networks:
       - peerprepnet
 
@@ -33,7 +47,7 @@ services:
     ports:
       - 8080:8080
     depends_on:
-      - mongodb
+      - service-registry
     networks:
       - peerprepnet
 
@@ -47,10 +61,36 @@ services:
     #   - ./frontend/.env
     container_name: frontend
     depends_on:
+      - service-registry
       - user-service
       - question-service
     networks:
       - peerprepnet
+    
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: 
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - peerprepnet
+    container_name: rabbitmq
+
+  matching-service:
+    build:
+      context: ./matching-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./matching-service/.env
+    container_name: matching-service
+    ports:
+      - 3002:3002
+    depends_on:
+      - service-registry
+      - rabbitmq
+    networks:
+      - peerprepnet
+
     
 networks:
   peerprepnet:
