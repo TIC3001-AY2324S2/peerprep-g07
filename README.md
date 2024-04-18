@@ -23,6 +23,14 @@
 1. Install npm packages using `npm install`
 2. Run Question Service using `npm run dev`.
 
+## Matching Service
+
+### Quick Start
+1. Install npm packages using `npm install`
+2. Pull the official RabbitMQ image from Docker Hub: `docker pull rabbitmq:3-management`
+3. Run a RabbitMQ container with the management plugin enabled: `docker run -d --name some-rabbit -p 5672:5672 -p 15672:15672 rabbitmq:3-management`
+4. Run Matching Service using `npm run dev`.
+
 ## Frontend
 
 ### Quick Start

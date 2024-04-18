@@ -1,8 +1,175 @@
 {% extends "base.html" %}
 
 {% block user_management %}
+    <!-- User service features -->
+    <div id="user-service-container">
+        <div class="container mb-5">
+            <!-- Alert -->
+            <div id="login-alert" class="alert" style="display: none;"></div>
 
-    <div class="container my-5">
+            <!-- Sign Up card -->
+            <div id="signup-card" class="row justify-content-center py-5" style="display: none;">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-5 px-md-5">
+                            <h1 class="card-title pb-3">Sign Up</h1>
+                            <form id="signup-form" class="d-grid">
+                                <!-- Username input -->
+                                <div class="row">
+                                    <div class="form-outline mb-4">
+                                        <input type="text" id="su-username" class="form-control" />
+                                        <label class="form-label" for="su-username">Username</label>
+                                    </div>
+                                </div>
+
+                                <!-- Email input -->
+                                <div class="form-outline mb-4">
+                                    <input type="email" id="su-email" class="form-control" />
+                                    <label class="form-label" for="su-email">Email address</label>
+                                </div>
+
+                                <!-- Password input -->
+                                <div class="form-outline mb-4">
+                                    <input type="password" id="su-password" class="form-control" />
+                                    <label class="form-label" for="su-password">Password</label>
+                                </div>
+
+                                <!-- Sign Up button -->
+                                <button type="submit" id="signup" class="btn btn-primary btn-block mb-4">
+                                    Sign up
+                                </button>
+
+                                <p>Already have an account? <a id="login-link" href="#">Login</a></p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Login card -->
+            <div id="login-card" class="row justify-content-center py-5">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body px-4 py-5 px-md-5">
+                            <h1 class="card-title pb-3">Login</h1>
+                            <form id="login-form" class="d-grid">
+                                <!-- Email input -->
+                                <div class="form-outline mb-4">
+                                    <input type="email" id="l-email" class="form-control" />
+                                    <label class="form-label" for="l-email">Email address</label>
+                                </div>
+            
+                                <!-- Password input -->
+                                <div class="form-outline mb-4">
+                                    <input type="password" id="l-password" class="form-control" />
+                                    <label class="form-label" for="l-password">Password</label>
+                                </div>
+            
+                                <!-- Login button -->
+                                <button type="submit" id="login" class="btn btn-primary btn-block mb-4">
+                                    Login
+                                </button>
+
+                                <p>Don't have an account? <a id="signup-link" href="#">Sign Up</a></p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row pb-5" id="welcome-user" style="display: none !important;">
+                <div id="welcome-text" class="d-flex justify-content-center pt-5">
+                    <p class="text-white">Welcome, <span id="username-placeholder">User</span>.</p>
+                </div>
+                <div class="d-flex justify-content-center">
+                    <button id="logoutBtn" class="btn btn-primary shadow p-2 px-5">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matching Service Features -->
+    <div id="matchingContainer" class="container mb-5">
+        <div class="d-flex justify-content-center">
+            <h1 class="fw-bold mx-4">Find a peer!</h1>
+            <div class="d-flex align-self-center">
+                <button id="startMatchingBtn" class="btn btn-info p-3" data-bs-toggle="modal" data-bs-target="#matchingModal">
+                    Start Matching
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Matching Modal -->
+    <div id="matchingModal" class="modal fade" tabindex="-1" aria-labelledby="matchingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Find a match</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- View for Matching Form -->
+                    <div id="matchingForm">
+                        <form>
+                            <div class="form-group">
+                                <label for="matchingTopic">Topic</label>
+                                <select class="form-control" id="matchingTopic" required>
+                                    <option disabled selected hidden>Choose an option</option>
+                                    <option value="Data Structures">Data Structures</option>
+                                    <option value="Algorithms">Algorithms</option>
+                                    <option value="Strings">Strings</option>
+                                    <option value="Bit Manipulation">Bit Manipulation</option>
+                                </select>
+                                <span class="error" id="matchingTopicError"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="matchingDifficulty">Difficulty</label>
+                                <select class="form-control" id="matchingDifficulty" required>
+                                    <option disabled selected hidden>Choose an option</option>
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                                <span class="error" id="matchingDifficultyError"></span>
+                            </div>
+                            <button type="submit" class="btn btn-primary" id="findMatchBtn">Find match!</button>
+                        </form>
+                    </div>
+
+                    <!-- View for Loading Screen while matching -->
+                    <div id="loadingFeedback" class="row justify-content-center" style="display: none;">
+                        <div class="spinner-border m-5" role="status"></div>
+                        <div class="d-flex justify-content-center">
+                            <p>Looking for a match... <span id="timer">30</span>s</p>
+                        </div>
+                    </div>
+
+                    <!-- View for Match Found -->
+                    <div id="matchFound" class="row" style="display: none;">
+                        <div class="d-flex justify-content-center">
+                            <h3>Match found!</h3>
+                        </div>
+                        <div class="d-flex justify-content-center">
+                            <i id="player1" class="bi bi-person-fill display-1 m-5"></i>
+                            <i id="player2" class="bi bi-person-fill display-1 m-5"></i>
+                        </div>
+                    </div>
+
+                    <!-- View for Match Not Found -->
+                    <div id="matchNotFound" class="row" style="display: none;">
+                        <div class="d-flex justify-content-center">
+                            <h3>No match found. Try again later.</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Question Service Features -->
+    <div class="container mb-5">
         <div class="d-flex justify-content-between mb-4">
             <h1 class="fw-bold">Question Repository</h1>
             <div class="d-flex align-self-center">
@@ -171,8 +338,162 @@
 {% block script %}
 <script>
     $(document).ready(function () {
+        console.log(localStorage);
 
-        // ******** QUESTION SERVICE FUNCTIONS ********
+        // ************************ USER SERVICE FUNCTIONS ************************
+
+        var signupLink = $("#signup-link");
+        var loginLink = $("#login-link");
+        var signupCard = $("#signup-card");
+        var loginCard = $("#login-card");
+        var welcomeText = $("#welcome-user");
+
+        function toggleCards(card1, card2) {
+            if (card1.css('display') === "none") {
+                card1.css('display', 'flex');
+                card2.css('display', 'none');
+            } else {
+                card1.css('display', 'none');
+                card2.css('display', 'flex');
+            }
+        }
+
+        signupLink.on("click", function (event) {
+            event.preventDefault(); // Prevent the default link behavior
+            toggleCards(signupCard, loginCard);
+        });
+
+        loginLink.on("click", function (event) {
+            event.preventDefault(); // Prevent the default link behavior
+            toggleCards(signupCard, loginCard);
+        });
+
+        // Check if user is already logged in
+        function checkLoginStatus() {
+            var username = localStorage.getItem('username');
+            var token = localStorage.getItem('token');
+            
+            if (username && token) {
+                // User is logged in, display welcome message
+                displayWelcomeMessage(username);
+                $("#matchingContainer").css('display', 'block');
+            } else {
+                // User is not logged in, show login form
+                loginCard.css('display', 'flex');
+                welcomeText.css('display', 'none');
+                $("#matchingContainer").css('display', 'none');
+            }
+        }
+
+        // Call checkLoginStatus when the page loads
+        checkLoginStatus();
+
+        $("#signup-form").on("submit", function (event) {
+            var username = $("#su-username").val();
+            var email = $("#su-email").val();
+            var password = $("#su-password").val();
+
+            $.ajax({
+                url: "http://localhost:3001/users/",
+                type: "POST",
+                data: {
+                    username: username,
+                    email: email,
+                    password: password
+                },
+                success: function (response) {
+                    console.log("Success:", response);
+                    toggleCards(signupCard, loginCard);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    $('#login-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('#login-alert').addClass('alert-danger');
+                    $('#login-alert').append('<strong>Error!</strong> ' + error);
+                }
+            });
+            event.preventDefault();  // Prevents page from reloading (the default action)
+        });
+
+        $("#login-form").on("submit", function (event) {
+            var email = $("#l-email").val();
+            var password = $("#l-password").val();
+            console.log(email);
+            console.log(password);
+            $.ajax({
+                url: "http://localhost:3001/auth/login/",
+                type: "POST",
+                data: {
+                    email: email,
+                    password: password
+                },
+                success: function (response) {
+                    console.log("Success:", response);
+                    handleLogin(response.accessToken);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    $('#login-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('#login-alert').addClass('alert-danger');
+                    $('#login-alert').text('<strong>Error!</strong> ' + error);
+                }
+            });
+            event.preventDefault();  // Prevents page from reloading (the default action)
+        });
+
+        function handleLogin(token) {
+            $.ajax({
+                url: "http://localhost:3001/auth/verify-token/",
+                method: "GET",
+                headers: {
+                    authorization: "Bearer " + token
+                },
+                success: function(response) {
+                    var userId = response.verifiedUser.id;
+                    var username = response.verifiedUser.username;
+                    var isAdmin = response.verifiedUser.isAdmin;
+                    // Cache user information in localStorage
+                    localStorage.setItem('userId', userId);
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('isAdmin', isAdmin);
+                    localStorage.setItem('token', token);
+                    // Show the matching button
+                    $("#matchingContainer").css('display', 'block');
+                    console.log(localStorage);
+                    // Show welcome text
+                    displayWelcomeMessage(username);
+                    console.log("Fetched user data: ", response);
+                },
+                error: function(xhr, status, error) {
+                    console.log("Error: ", error);
+                }
+            });
+        }
+
+        // Display welcome message
+        function displayWelcomeMessage(username) {
+            $("#username-placeholder").text(username);
+            toggleCards(welcomeText, loginCard);
+        }
+
+        $("#logoutBtn").on("click", function (event) {
+            // Remove user information from localStorage
+            localStorage.removeItem('userId');
+            localStorage.removeItem('username');
+            localStorage.removeItem('isAdmin');
+            localStorage.removeItem('token');
+            // Hide the matching button
+            $("#matchingContainer").css('display', 'none');
+            toggleCards(welcomeText, loginCard);
+            console.log(localStorage);
+        });
+        
+
+        // ************************ QUESTION SERVICE FUNCTIONS ************************
 
         // Question Repo DataTable settings
         $('#question-table').DataTable({
@@ -203,7 +524,7 @@
         $(".edit-question-btn").on("click", function() {
             // Clear error messages if any
             $(".error").text("");
-
+            
             var questionId = $(this).data('question-id');
             openEditModal(questionId);
         });
@@ -414,9 +735,106 @@
             });
         });
 
+        // ************************ MATCHING SERVICE FUNCTIONS ************************
+
+        $("#startMatchingBtn").on("click", function (event) {
+            $('#matchingModal').modal('show');
+            $("#matchingForm").css('display', 'block');
+            $("#loadingFeedback").css('display', 'none');
+            $("#matchFound").css('display', 'none');
+            $("#matchNotFound").css('display', 'none');
+        });
+        
+        $("#matchingForm").on("submit", function (event) {
+            var userId = localStorage.getItem("userId");
+            var username = localStorage.getItem("username");
+            var topic = $("#matchingTopic").val();
+            var difficulty = $("#matchingDifficulty").val();
+            console.log(topic);
+            console.log(difficulty);
+
+            // Perform form validation
+            isValid = matchingFormValidation(topic, difficulty);
+            if (!isValid) {
+                event.preventDefault();
+                return;
+            }
+            
+            // Show loading spinner and start the timer on the matching modal
+            $("#loadingFeedback").css('display', 'flex');
+            $("#matchingForm").css('display', 'none');
+            startTimer();
+            
+            $.ajax({
+                url: "http://localhost:3002/match",
+                type: "POST",
+                timeout: 5000,
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    userId: userId,
+                    username: username,
+                    topic: topic,
+                    difficulty: difficulty
+                }),
+                success: function (response) {
+                    console.log("Success:", response);
+                    $("#player1").text(response.matchedUsers[0].username)
+                    $("#player2").text(response.matchedUsers[1].username)
+                    // Display Match Found view in matching modal
+                    $("#loadingFeedback").css('display', 'none');
+                    $("#matchFound").css('display', 'flex');
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    $("#loadingFeedback").css('display', 'none');
+                    $("#matchNotFound").css('display', 'flex');
+                }
+            });
+            event.preventDefault();  // Prevents page from reloading (the default action)
+        });
+
+        function matchingFormValidation(topic, difficulty) {
+            isValid = true;
+            
+            // Clear error messages first to reset
+            $(".error").text("");
+
+            // Check each field for empty input
+            if (topic === null) {
+                $("#matchingTopicError").text("Topic is required");
+                console.log("Topic is required");
+                isValid = false;
+            }
+
+            if (difficulty === null) {
+                $("#matchingDifficultyError").text("Difficulty is required");
+                console.log("Difficulty is required");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function startTimer() {
+            // Initialize timer value
+            var timerValue = 30;
+
+            // Display initial timer value
+            $('#timer').text(timerValue);
+
+            // Function to update timer every second
+            var countdown = setInterval(function() {
+                timerValue--;
+                $('#timer').text(timerValue);
+
+                if (timerValue <= 0) {
+                    clearInterval(countdown);
+                    $('#timer').text('0');
+                }
+            }, 1000); // Update timer every 1000ms (1 second)
+        }
+    
     });
 
 </script>
 {% endblock script %}
-
-</html>
