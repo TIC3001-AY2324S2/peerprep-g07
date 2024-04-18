@@ -119,7 +119,7 @@ $("#matchingForm").on("submit", function (event) {
     
     $.ajax({
         //url: "http://localhost:3002/match",
-        url: "http://localhost:8765/matching-service/match",
+        url: "http://host.docker.internal:8765/matching-service/match",
         type: "POST",
         timeout: 5000,
         contentType: 'application/json',
@@ -155,7 +155,7 @@ $("#matchingForm").on("submit", function (event) {
     }).then(()=>{
         $.ajax({
             //url: "http://localhost:8080/api/questions",
-            url: "http://localhost:8765/question-service/api/questions",
+            url: "http://host.docker.internal:8765/question-service/api/questions",
             type: "GET",
             success: function (response) {
                 // get random question
@@ -189,7 +189,7 @@ $("#matchingForm").on("submit", function (event) {
 
                 $.ajax({
                     //url: "http://localhost:4001/api/collab",
-                    url: "http://localhost:8765/collaboration-service/api/collab",
+                    url: "http://host.docker.internal:8765/collaboration-service/api/collab",
                     type: 'POST',
                     contentType: 'application/json',
                     // users are also given by matching service api

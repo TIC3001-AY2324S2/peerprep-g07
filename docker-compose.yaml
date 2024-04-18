@@ -1,27 +1,29 @@
 version: "3.8"
 
 services:
-  service-registry:
-    build:
-      context: ./service-discovery
-      dockerfile: Dockerfile
-    container_name: service-registry
-    ports:
-      - 8761:8761
-    networks:
-      - peerprepnet
+  # service-registry:
+  #   build:
+  #     context: ./service-discovery
+  #     dockerfile: Dockerfile
+  #   container_name: service-registry
+  #   ports:
+  #     - 8761:8761
+  #   networks:
+  #     - peerprepnet
 
-  api-service:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
-    container_name: api-gateway
-    ports:
-      - 8765:8765
-    depends_on:
-      - service-registry
-    networks:
-      - peerprepnet
+  # api-gateway:
+  #   build:
+  #     context: ./api-gateway
+  #     dockerfile: Dockerfile
+  #   container_name: api-gateway
+  #   ports:
+  #     - 8765:8765
+  #   depends_on:
+  #     - service-registry
+  #   networks:
+  #     - peerprepnet
+  #   environment:
+  #     - EUREKA_SERVICE_URL=http://service-registry:8761 
   
   user-service:
     build:
@@ -32,8 +34,6 @@ services:
     container_name: user-service
     ports:
       - 3001:3001
-    depends_on:
-      - service-registry
     networks:
       - peerprepnet
 
@@ -46,8 +46,6 @@ services:
     container_name: question-service
     ports:
       - 8080:8080
-    depends_on:
-      - service-registry
     networks:
       - peerprepnet
 
@@ -61,12 +59,26 @@ services:
     #   - ./frontend/.env
     container_name: frontend
     depends_on:
-      - service-registry
       - user-service
       - question-service
     networks:
       - peerprepnet
     
+  collaboration-service:
+    build:
+      context: ./collaboration-service/collaborative-editor-backend
+      dockerfile: Dockerfile
+    ports:
+      - 4001:4001
+    # env_file:
+    #   - ./frontend/.env
+    container_name: collaboratioon-service
+    depends_on:
+      - question-service
+    networks:
+      - peerprepnet
+
+  
   rabbitmq:
     image: rabbitmq:3-management
     ports: 
@@ -86,7 +98,6 @@ services:
     ports:
       - 3002:3002
     depends_on:
-      - service-registry
       - rabbitmq
     networks:
       - peerprepnet

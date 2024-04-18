@@ -1,5 +1,14 @@
 # CS3219-AY22-23-Project-Skeleton
 
+### Running all microservices using docker and running the api-gateway and service-registry command 
+Prerequisites
+1. Please have java installed
+2. Run the startUpAll.sh in this directory
+
+To Run:
+1: chmod +x startUpAll.sh
+2: ./startUpAll.sh
+
 ## User Service
 
 ### Quick Start

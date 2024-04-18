@@ -1,8 +1,8 @@
 FROM openjdk
 
-WORKDIR /service-registry/
+WORKDIR /service-registry
 
-COPY ./service-discovery-0.0.1-SNAPSHOT.jar /api-gateway/service-discovery-0.0.1-SNAPSHOT.jar
+COPY service-discovery-0.0.1-SNAPSHOT.jar service-discovery-0.0.1-SNAPSHOT.jar
 
 EXPOSE 8761
 
