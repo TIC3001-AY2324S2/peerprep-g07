@@ -4,10 +4,12 @@ import "dotenv/config";
 //Set up mongoose connection
 import mongoose from "mongoose";
 
-let mongoDBUri =
-  process.env.ENV == "PROD"
-    ? process.env.DB_CLOUD_URI
-    : process.env.DB_LOCAL_URI;
+// let mongoDBUri =
+//   process.env.ENV == "PROD"
+//     ? process.env.DB_CLOUD_URI
+//     : process.env.DB_LOCAL_URI;
+
+let mongoDBUri = process.env.DB_CLOUD_URI
 
 mongoose.connect(mongoDBUri, {
   useNewUrlParser: true,
