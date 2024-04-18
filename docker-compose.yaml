@@ -17,7 +17,7 @@ services:
       - ./user-service/.env
     container_name: user-service
     ports:
-      - 8001:8001
+      - 3001:3001
     depends_on:
       - mongodb
     networks:
@@ -51,6 +51,30 @@ services:
       - question-service
     networks:
       - peerprepnet
+    
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports: 
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - peerprepnet
+    container_name: rabbitmq
+
+  matching-service:
+    build:
+      context: ./matching-service
+      dockerfile: Dockerfile
+    env_file:
+      - ./matching-service/.env
+    container_name: matching-service
+    ports:
+      - 3002:3002
+    depends_on:
+      - rabbitmq
+    networks:
+      - peerprepnet
+
     
 networks:
   peerprepnet:
