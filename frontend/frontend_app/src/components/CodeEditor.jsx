@@ -27,6 +27,12 @@ const CodeEditor = (room) => {
     }
   };
 
+  const handleClose = () =>{
+    console.log("disconnecting socket from room:", { roomID }.roomID.room)
+    socket.emit('DISCONNECT', { roomID }.roomID.room)
+    // socket.disconnect();
+  }
+
 
   useEffect(() => {
     // Socket.IO event listeners
@@ -46,19 +52,20 @@ const CodeEditor = (room) => {
   }, []);
 
   return (
-    <div>
+    <><div>
       <div>
-    </div>
-      <button id="collaborate" style={{display: "none"}} onClick={handleCreateRoom}></button>
+      </div>
+      <button id="collaborate" style={{ display: "none" }} onClick={handleCreateRoom}></button>
       <MonacoEditor
         value={code}
         language="javascript"
         theme="vs-dark"
         height="500px"
         onChange={handleCodeChange}
-        options={{automaticLayout: true,}}
-      />
-    </div>
+        options={{ automaticLayout: true, }} />
+    </div><div class="modal-footer">
+        <button id="exitSession" type="button" class="btn btn-secondary" onClick={handleClose} data-bs-dismiss="modal">Quit</button>
+      </div></>
   );
 };
 

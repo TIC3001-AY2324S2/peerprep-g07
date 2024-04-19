@@ -17,6 +17,7 @@
                                 <!-- Username input -->
                                 <div class="row">
                                     <div class="form-outline mb-4">
+                                        <span class="error" id="su-usernameError"></span>
                                         <input type="text" id="su-username" class="form-control" />
                                         <label class="form-label" for="su-username">Username</label>
                                     </div>
@@ -24,12 +25,14 @@
 
                                 <!-- Email input -->
                                 <div class="form-outline mb-4">
+                                    <span class="error" id="su-emailError"></span>
                                     <input type="email" id="su-email" class="form-control" />
                                     <label class="form-label" for="su-email">Email address</label>
                                 </div>
 
                                 <!-- Password input -->
                                 <div class="form-outline mb-4">
+                                    <span class="error" id="su-passwordError"></span>
                                     <input type="password" id="su-password" class="form-control" />
                                     <label class="form-label" for="su-password">Password</label>
                                 </div>
@@ -55,12 +58,14 @@
                             <form id="login-form" class="d-grid">
                                 <!-- Email input -->
                                 <div class="form-outline mb-4">
+                                    <span class="error" id="l-emailError"></span>
                                     <input type="email" id="l-email" class="form-control" />
                                     <label class="form-label" for="l-email">Email address</label>
                                 </div>
             
                                 <!-- Password input -->
                                 <div class="form-outline mb-4">
+                                    <span class="error" id="l-passwordError"></span>
                                     <input type="password" id="l-password" class="form-control" />
                                     <label class="form-label" for="l-password">Password</label>
                                 </div>
@@ -77,12 +82,57 @@
                 </div>
             </div>
 
+            <!-- Welcome card -->
             <div class="row pb-5" id="welcome-user" style="display: none !important;">
                 <div id="welcome-text" class="d-flex justify-content-center pt-5">
                     <p class="text-white">Welcome, <span id="username-placeholder">User</span>.</p>
+                    <div class="d-flex align-self-center m-3">
+                        <button id="editUserBtn" class="btn btn-light"><i class="bi bi-pencil"></i></button>
+                    </div>
                 </div>
                 <div class="d-flex justify-content-center">
                     <button id="logoutBtn" class="btn btn-primary shadow p-2 px-5">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div id="userEditModal" class="modal fade" tabindex="-1" aria-labelledby="userEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">User Info</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Alert -->
+                    <div id="edit-user-form-alert" class="alert" style="display: none;"></div>
+                    <!-- User Edit Form -->
+                    <form id="userEditForm">
+                        <input type="hidden" id="userId" name="userId">
+
+                        <div class="form-group">
+                            <label for="userUsername">Username</label>
+                            <input type="text" class="form-control" id="userUsername" required>
+                            <span class="error" id="userUsernameError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userEmail">Email</label>
+                            <input type="text" class="form-control" id="userEmail" required>
+                            <span class="error" id="userEmailError"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userPassword">Change Password (if not, enter current password before submitting)</label>
+                            <input type="password" class="form-control" id="userPassword" required>
+                            <span class="error" id="userPasswordError"></span>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="submitUserEditFormBtn">Update</button>
+                        <button type="button" class="btn btn-danger" id="deleteUserBtn">Delete account</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -142,7 +192,7 @@
                     <div id="loadingFeedback" class="row justify-content-center" style="display: none;">
                         <div class="spinner-border m-5" role="status"></div>
                         <div class="d-flex justify-content-center">
-                            <p>Looking for a match... <span id="timer">30</span>s</p>
+                            <p>Looking for a match... <span id="timer">5</span>s</p>
                         </div>
                     </div>
 
@@ -436,6 +486,13 @@
             var email = $("#su-email").val();
             var password = $("#su-password").val();
 
+            // Perform form validation
+            isValid = signupFormValidation(username, email, password);
+            if (!isValid) {
+                event.preventDefault();
+                return;
+            }
+
             $.ajax({
                 url: "http://localhost:3001/users/",
                 type: "POST",
@@ -454,17 +511,52 @@
                         $(this).css('display', 'none');
                     });
                     $('#login-alert').addClass('alert-danger');
-                    $('#login-alert').append('<strong>Error!</strong> ' + error);
+                    $('#login-alert').empty().append('<strong>Error!</strong> ' + error);
                 }
             });
             event.preventDefault();  // Prevents page from reloading (the default action)
         });
 
+        function signupFormValidation(username, email, password) {
+            isValid = true;
+            
+            // Clear error messages first to reset
+            $(".error").text("");
+
+            // Check each field for empty input
+            if (username === "") {
+                $("#su-usernameError").text("Username is required");
+                console.log("Username is required");
+                isValid = false;
+            }
+
+            if (email === "") {
+                $("#su-emailError").text("Email is required");
+                console.log("Email is required");
+                isValid = false;
+            }
+            
+            if (password === "") {
+                $("#su-passwordError").text("Password is required");
+                console.log("Password is required");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
         $("#login-form").on("submit", function (event) {
             var email = $("#l-email").val();
             var password = $("#l-password").val();
             console.log(email);
-            console.log(password);
+
+            // Perform form validation
+            isValid = loginFormValidation(email, password);
+            if (!isValid) {
+                event.preventDefault();
+                return;
+            }
+
             $.ajax({
                 url: "http://localhost:3001/auth/login/",
                 type: "POST",
@@ -499,10 +591,12 @@
                 success: function(response) {
                     var userId = response.verifiedUser.id;
                     var username = response.verifiedUser.username;
+                    var email = response.verifiedUser.email;
                     var isAdmin = response.verifiedUser.isAdmin;
                     // Cache user information in localStorage
                     localStorage.setItem('userId', userId);
                     localStorage.setItem('username', username);
+                    localStorage.setItem('email', email);
                     localStorage.setItem('isAdmin', isAdmin);
                     localStorage.setItem('token', token);
                     // Show the matching button
@@ -522,16 +616,44 @@
             });
         }
 
+        function loginFormValidation(email, password) {
+            isValid = true;
+            
+            // Clear error messages first to reset
+            $(".error").text("");
+
+            // Check each field for empty input
+            if (email === "") {
+                $("#l-emailError").text("Email is required");
+                console.log("Email is required");
+                isValid = false;
+            }
+            
+            if (password === "") {
+                $("#l-passwordError").text("Password is required");
+                console.log("Password is required");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
         // Display welcome message
         function displayWelcomeMessage(username) {
             $("#username-placeholder").text(username);
             toggleCards(welcomeText, loginCard);
         }
 
+        // Handle logout
         $("#logoutBtn").on("click", function (event) {
+            handleLogout();
+        });
+
+        function handleLogout() {
             // Remove user information from localStorage
             localStorage.removeItem('userId');
             localStorage.removeItem('username');
+            localStorage.removeItem('email');
             localStorage.removeItem('isAdmin');
             localStorage.removeItem('token');
             // Hide the matching button
@@ -540,6 +662,141 @@
             $(".admin-view").hide();
             toggleCards(welcomeText, loginCard);
             console.log(localStorage);
+        }
+
+        // Edit User Profile functions
+        $("#editUserBtn").on("click", function (event) {
+            // Clear error messages if any
+            $(".error").text("");
+            // Open edit user modal
+            var userId = localStorage.getItem("userId");
+            openEditUserModal(userId);
+        });
+
+        function openEditUserModal(userId) {
+            var username = localStorage.getItem("username"); 
+            var email = localStorage.getItem("email"); 
+            var password = "";
+            var token = localStorage.getItem("token");
+
+            // Clear the form of all data first
+            $("#userEditForm")[0].reset();
+            // Fill the form with the retrieved question data
+            $("#userId").val(userId);
+            $("#userUsername").val(username);
+            $("#userEmail").val(email);
+            $("#userPassword").val(password);
+            // Show the populated modal
+            $('#userEditModal').modal('show');
+        }
+
+        $("#userEditForm").on("submit", function (event) {
+            var userId = $("#userId").val();
+            var username = $("#userUsername").val();
+            var email = $("#userEmail").val();
+            var password = $("#userPassword").val();
+            var token = localStorage.getItem("token");
+
+            var isValid = userEditFormValidation(username, email, password)
+            if (!isValid){
+                event.preventDefault();
+                return;
+            }
+
+            $.ajax({
+                url: "http://localhost:3001/users/",
+                type: "PATCH",
+                contentType: 'application/json',
+                headers: {
+                    authorization: "Bearer " + token
+                },
+                data: JSON.stringify({
+                    id: userId,
+                    username: username,
+                    email: email,
+                    password: password
+                }),
+                success: function (response) {
+                    console.log("Successfully updated user info:", response);
+                    // Cache the updated user information in localStorage
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('email', email);
+                    // Change name in welcome message
+                    $("#username-placeholder").text(username);
+                    // Hide modal
+                    $('#userEditModal').modal('hide');
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error in updating user info:", xhr);
+
+                    $('#edit-user-form-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('#edit-user-form-alert').addClass('alert-danger');
+                    $('#edit-user-form-alert').empty().append('<strong>Error!</strong> ' + error);
+                }
+            });
+            event.preventDefault();
+        });
+
+        function userEditFormValidation(username, email, password) {
+            isValid = true;
+            
+            // Clear error messages first to reset
+            $(".error").text("");
+
+            // Check each field for empty input
+            if (username === "") {
+                $("#userUsernameError").text("Username is required");
+                console.log("Username is required");
+                isValid = false;
+            }
+
+            if (email === "") {
+                $("#userEmailError").text("Email is required");
+                console.log("Email is required");
+                isValid = false;
+            }
+            
+            if (password === "") {
+                $("#userPasswordError").text("Password is required");
+                console.log("Password is required");
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        $("#deleteUserBtn").on("click", function (event) {
+            var email = $("#userEmail").val();
+            var token = localStorage.getItem("token");
+
+            $.ajax({
+                url: "http://localhost:3001/users/",
+                type: "DELETE",
+                contentType: 'application/json',
+                headers: {
+                    authorization: "Bearer " + token
+                },
+                data: JSON.stringify({
+                    email: email
+                }),
+                success: function (response) {
+                    console.log("Successfully deleted user:", response);
+                    $('#userEditModal').modal('hide');
+                    handleLogout();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error in updating user info:", xhr);
+
+                    $('#edit-user-form-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('#edit-user-form-alert').addClass('alert-danger');
+                    $('#edit-user-form-alert').empty().append('<strong>Error!</strong>' + error);
+                }
+            });
+            event.preventDefault();
         });
         
 

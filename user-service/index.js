@@ -4,7 +4,13 @@ import cors from "cors";
 import userRoutes from "./routes/user-service-routes.js";
 import authRoutes from "./routes/auth-routes.js";
 
+// lifted from https://dev.to/caspergeek/how-to-use-require-in-ecmascript-modules-1l42
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const Eureka = require('eureka-js-client').Eureka;
+
 const app = express();
+const PORT = process.env.PORT || 3001
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -30,6 +36,32 @@ app.use((req, res, next) => {
   next();
 });
 
+const client = new Eureka({
+  instance: {
+    app: process.env.SERVICE || 'user-service',
+    hostName: 'localhost',
+    ipAddr: process.env.LOCAL_IPADDR || '127.0.0.1',
+    statusPageUrl: 'http://localhost:8080/',
+    vipAddress: process.env.SERVICE || 'user-service',
+    port: {
+      '$': PORT,
+      '@enabled': 'true',
+    },
+    dataCenterInfo: {
+      '@class': 'com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo',
+      name: 'MyOwn',
+    },
+    registerWithEureka: true,
+    fetchRegistry: true,
+  },
+  //retry 10 time for 3 minute 20 seconds.
+  eureka: {
+    host: process.env.EUREKA_HOST || 'localhost',
+    port: process.env.EUREKA_PORT || 8761,
+    servicePath: process.env.EUREKA_SERVICE_PATH || '/eureka/apps/',
+  },
+})
+
 app.use("/users", userRoutes);
 app.use("/auth", authRoutes);
 
@@ -39,6 +71,16 @@ app.get("/", (req, res, next) => {
     message: "Hello World from user-service",
   });
 });
+
+client.start(error=>{
+  console.log(error || "user-service registered!!")
+  app.get("/", (req, res, next) => {
+    console.log("Sending Greetings!");
+    res.json({
+      message: "Hello World from user-service",
+    });
+  });
+})
 
 // Handle When No Route Match Is Found
 app.use((req, res, next) => {
