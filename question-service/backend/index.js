@@ -53,12 +53,12 @@ app.use(express.urlencoded({ extended: false }))
 
 // use the address router to handle requests 
 // at http://localhost:8080/api/questions
-client.start(error=>{
-  console.log(error || "question-service registered!!")
-  app.get('/', (req, res) => {
-    res.json({ message: 'Hello World' })
-  })
-})
+// client.start(error=>{
+//   console.log(error || "question-service registered!!")
+//   app.get('/', (req, res) => {
+//     res.json({ message: 'Hello World' })
+//   })
+// })
 app.use('/api/questions', require('./routes/questionRoutes'))
 
 

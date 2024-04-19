@@ -94,11 +94,11 @@ app.use(express.json())
 
 client.start(error=>{
   console.log(error || "matching-service registered!!")
-  app.get('/', (req, res) => {
-    res.json({ message: 'Hello World from matching-service!' })
-  })
 })
 
+app.get('/', (req, res) => {
+  res.json({ message: 'Hello World from matching-service!' })
+})
 // use the router to handle requests 
 // at http://localhost:3002/match
 app.use('/match', require('./routes/matchingRoutes'))
