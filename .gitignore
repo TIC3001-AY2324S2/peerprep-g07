@@ -1,5 +1,5 @@
 **/node_modules
 **/.idea
 **/__pycache__
+frontend/myenv
 frontend/env
-frontend/frontend_app/static/

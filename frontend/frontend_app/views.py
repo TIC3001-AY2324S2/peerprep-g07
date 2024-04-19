@@ -1,7 +1,11 @@
 from django.shortcuts import render
 import requests
+from dotenv import load_dotenv
+import os
 
-QUESTION_SERVICE_ENDPOINT = 'http://question-service:8080/api/questions'
+load_dotenv() 
+
+QUESTION_SERVICE_ENDPOINT =  os.getenv('QUESTION_SERVICE_ENDPOINT')
 
 def render_frontend(request):
     response = requests.get(QUESTION_SERVICE_ENDPOINT)

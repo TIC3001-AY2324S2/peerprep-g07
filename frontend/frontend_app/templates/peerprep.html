@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block user_management %}
-    <!-- User service features -->
+{% load render_bundle from webpack_loader %}
     <div id="user-service-container">
         <div class="container mb-5">
             <!-- Alert -->
@@ -151,6 +151,7 @@
                         <div class="d-flex justify-content-center">
                             <h3>Match found!</h3>
                         </div>
+                        <p hidden="true" id="matchSeed"></p>
                         <div class="d-flex justify-content-center">
                             <i id="player1" class="bi bi-person-fill display-1 m-5"></i>
                             <i id="player2" class="bi bi-person-fill display-1 m-5"></i>
@@ -173,7 +174,7 @@
         <div class="d-flex justify-content-between mb-4">
             <h1 class="fw-bold">Question Repository</h1>
             <div class="d-flex align-self-center">
-                <button id="createQuestionBtn" class="btn btn-primary p-2">
+                <button id="createQuestionBtn" class="btn btn-primary p-2 admin-view">
                     <i class="bi bi-plus-lg"></i>&ensp;Create a new question
                 </button>
             </div>
@@ -198,8 +199,8 @@
                     <td>{{ qn.complexity }}</td>
                     <td>
                         <button class="btn btn-info btn-sm question-info-btn" data-question-id="{{ qn.id }}"><i class="bi bi-info-circle"></i></button>
-                        <button class="btn btn-warning btn-sm edit-question-btn" data-question-id="{{ qn.id }}"><i class="bi bi-pencil-square"></i></button>
-                        <button class="btn btn-danger btn-sm delete-question-btn" data-question-id="{{ qn.id }}"><i class="bi bi-trash-fill"></i></button>
+                        <button class="btn btn-warning btn-sm edit-question-btn admin-view" data-question-id="{{ qn.id }}"><i class="bi bi-pencil-square"></i></button>
+                        <button class="btn btn-danger btn-sm delete-question-btn admin-view" data-question-id="{{ qn.id }}"><i class="bi bi-trash-fill"></i></button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -304,6 +305,39 @@
                     <h5><strong>Complexity</strong></h5>
                     <p id="qn-info-complexity"></p>
                 </div>
+                <!-- <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div> -->
+            </div>
+        </div>
+    </div>
+
+    <!-- <button id="editorButtonDummy" class="btn btn-primary p-2">
+        <i class="bi bi-plus-lg"></i>&ensp;Click to join an editor
+    </button> -->
+
+
+    <!-- Code Editor Modal -->
+    <div id="codeEditorModal" class="modal fade" tabindex="-1" aria-labelledby="codeEditorModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Code Editor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="display: none;" id="matched-qn-id"></p>
+                    <h5><strong>Title</strong></h5>
+                    <p id="matched-qn-info-title"></p>
+                    <h5><strong>Description</strong></h5>
+                    <p id="matched-qn-info-desc"></p>
+                    <h5><strong>Category</strong></h5>
+                    <p id="matched-qn-info-category"></p>
+                    <h5><strong>Complexity</strong></h5>
+                    <p id="matched-qn-info-complexity"></p>
+                    <h1>Monaco Editor </h1>
+                    <div id="editor"></div>
+                </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
@@ -336,9 +370,13 @@
 {% endblock style %}
 
 {% block script %}
-<script>
+
+<script>    
+
     $(document).ready(function () {
         console.log(localStorage);
+        // Hide admin-only features
+        $(".admin-view").hide();
 
         // ************************ USER SERVICE FUNCTIONS ************************
 
@@ -372,16 +410,21 @@
         function checkLoginStatus() {
             var username = localStorage.getItem('username');
             var token = localStorage.getItem('token');
+            var isAdmin = localStorage.getItem('isAdmin');
             
             if (username && token) {
                 // User is logged in, display welcome message
                 displayWelcomeMessage(username);
                 $("#matchingContainer").css('display', 'block');
+                if (isAdmin === "true") {
+                    $(".admin-view").show();
+                }
             } else {
                 // User is not logged in, show login form
                 loginCard.css('display', 'flex');
                 welcomeText.css('display', 'none');
                 $("#matchingContainer").css('display', 'none');
+                $(".admin-view").hide();
             }
         }
 
@@ -439,7 +482,8 @@
                         $(this).css('display', 'none');
                     });
                     $('#login-alert').addClass('alert-danger');
-                    $('#login-alert').text('<strong>Error!</strong> ' + error);
+                    $('#login-alert')
+                    $('#login-alert').empty().append('<strong>Error!</strong>&ensp;This user does not exist. Sign up to create an account.');
                 }
             });
             event.preventDefault();  // Prevents page from reloading (the default action)
@@ -463,6 +507,10 @@
                     localStorage.setItem('token', token);
                     // Show the matching button
                     $("#matchingContainer").css('display', 'block');
+                    // Show the admin features to admin users
+                    if (isAdmin) {
+                        $(".admin-view").show();
+                    }
                     console.log(localStorage);
                     // Show welcome text
                     displayWelcomeMessage(username);
@@ -488,6 +536,8 @@
             localStorage.removeItem('token');
             // Hide the matching button
             $("#matchingContainer").css('display', 'none');
+            // Hide the admin-only features
+            $(".admin-view").hide();
             toggleCards(welcomeText, loginCard);
             console.log(localStorage);
         });
@@ -497,7 +547,7 @@
 
         // Question Repo DataTable settings
         $('#question-table').DataTable({
-            "iDisplayLength": 100,
+            "iDisplayLength": 10,
             "columnDefs": [{ width: '200px', targets: [3] }],
             // "order": [[9, 'asc']],  // order by a specific column
         });
@@ -711,6 +761,7 @@
 
                     // Show the populated modal
                     $('#questionInfoModal').modal('show');
+                    
                 },
                 error: function (xhr, status, error) {
                     console.error("Error in retrieving question:", error);
@@ -736,103 +787,6 @@
         });
 
         // ************************ MATCHING SERVICE FUNCTIONS ************************
-
-        $("#startMatchingBtn").on("click", function (event) {
-            $('#matchingModal').modal('show');
-            $("#matchingForm").css('display', 'block');
-            $("#loadingFeedback").css('display', 'none');
-            $("#matchFound").css('display', 'none');
-            $("#matchNotFound").css('display', 'none');
-        });
-        
-        $("#matchingForm").on("submit", function (event) {
-            var userId = localStorage.getItem("userId");
-            var username = localStorage.getItem("username");
-            var topic = $("#matchingTopic").val();
-            var difficulty = $("#matchingDifficulty").val();
-            console.log(topic);
-            console.log(difficulty);
-
-            // Perform form validation
-            isValid = matchingFormValidation(topic, difficulty);
-            if (!isValid) {
-                event.preventDefault();
-                return;
-            }
-            
-            // Show loading spinner and start the timer on the matching modal
-            $("#loadingFeedback").css('display', 'flex');
-            $("#matchingForm").css('display', 'none');
-            startTimer();
-            
-            $.ajax({
-                url: "http://localhost:3002/match",
-                type: "POST",
-                timeout: 5000,
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    userId: userId,
-                    username: username,
-                    topic: topic,
-                    difficulty: difficulty
-                }),
-                success: function (response) {
-                    console.log("Success:", response);
-                    $("#player1").text(response.matchedUsers[0].username)
-                    $("#player2").text(response.matchedUsers[1].username)
-                    // Display Match Found view in matching modal
-                    $("#loadingFeedback").css('display', 'none');
-                    $("#matchFound").css('display', 'flex');
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error:", error);
-                    $("#loadingFeedback").css('display', 'none');
-                    $("#matchNotFound").css('display', 'flex');
-                }
-            });
-            event.preventDefault();  // Prevents page from reloading (the default action)
-        });
-
-        function matchingFormValidation(topic, difficulty) {
-            isValid = true;
-            
-            // Clear error messages first to reset
-            $(".error").text("");
-
-            // Check each field for empty input
-            if (topic === null) {
-                $("#matchingTopicError").text("Topic is required");
-                console.log("Topic is required");
-                isValid = false;
-            }
-
-            if (difficulty === null) {
-                $("#matchingDifficultyError").text("Difficulty is required");
-                console.log("Difficulty is required");
-                isValid = false;
-            }
-
-            return isValid;
-        }
-
-        function startTimer() {
-            // Initialize timer value
-            var timerValue = 30;
-
-            // Display initial timer value
-            $('#timer').text(timerValue);
-
-            // Function to update timer every second
-            var countdown = setInterval(function() {
-                timerValue--;
-                $('#timer').text(timerValue);
-
-                if (timerValue <= 0) {
-                    clearInterval(countdown);
-                    $('#timer').text('0');
-                }
-            }, 1000); // Update timer every 1000ms (1 second)
-        }
     
     });
 

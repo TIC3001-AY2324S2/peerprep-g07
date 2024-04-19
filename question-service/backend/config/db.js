@@ -1,5 +1,6 @@
 // import dependencies required for mongoose
 const mongoose = require('mongoose')
+const dotenv = require('dotenv').config()
 
 // function to start up and connect to MongoDB database
 const connectDB = async () => {
