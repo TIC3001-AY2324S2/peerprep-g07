@@ -3,3 +3,5 @@
 **/__pycache__
 frontend/myenv
 frontend/env
+api-gateway/
+service-discovery/
