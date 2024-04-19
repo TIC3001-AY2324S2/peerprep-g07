@@ -86,9 +86,9 @@
             <div class="row pb-5" id="welcome-user" style="display: none !important;">
                 <div id="welcome-text" class="d-flex justify-content-center pt-5">
                     <p class="text-white">Welcome, <span id="username-placeholder">User</span>.</p>
-                    <!-- <div class="d-flex align-self-center m-3">
+                    <div class="d-flex align-self-center m-3">
                         <button id="editUserBtn" class="btn btn-light"><i class="bi bi-pencil"></i></button>
-                    </div> -->
+                    </div>
                 </div>
                 <div class="d-flex justify-content-center">
                     <button id="logoutBtn" class="btn btn-primary shadow p-2 px-5">Logout</button>
@@ -106,6 +106,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <!-- Alert -->
+                    <div id="edit-user-form-alert" class="alert" style="display: none;"></div>
+                    <!-- User Edit Form -->
                     <form id="userEditForm">
                         <input type="hidden" id="userId" name="userId">
 
@@ -122,12 +125,13 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="userPassword">Password</label>
-                            <input type="text" class="form-control" id="userPassword" required>
+                            <label for="userPassword">Change Password (if not, enter current password before submitting)</label>
+                            <input type="password" class="form-control" id="userPassword" required>
                             <span class="error" id="userPasswordError"></span>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary" id="findMatchBtn">Update</button>
+                        <button type="submit" class="btn btn-primary" id="submitUserEditFormBtn">Update</button>
+                        <button type="button" class="btn btn-danger" id="deleteUserBtn">Delete account</button>
                     </form>
                 </div>
             </div>
@@ -507,7 +511,7 @@
                         $(this).css('display', 'none');
                     });
                     $('#login-alert').addClass('alert-danger');
-                    $('#login-alert').append('<strong>Error!</strong> ' + error);
+                    $('#login-alert').empty().append('<strong>Error!</strong> ' + error);
                 }
             });
             event.preventDefault();  // Prevents page from reloading (the default action)
@@ -587,10 +591,12 @@
                 success: function(response) {
                     var userId = response.verifiedUser.id;
                     var username = response.verifiedUser.username;
+                    var email = response.verifiedUser.email;
                     var isAdmin = response.verifiedUser.isAdmin;
                     // Cache user information in localStorage
                     localStorage.setItem('userId', userId);
                     localStorage.setItem('username', username);
+                    localStorage.setItem('email', email);
                     localStorage.setItem('isAdmin', isAdmin);
                     localStorage.setItem('token', token);
                     // Show the matching button
@@ -638,10 +644,16 @@
             toggleCards(welcomeText, loginCard);
         }
 
+        // Handle logout
         $("#logoutBtn").on("click", function (event) {
+            handleLogout();
+        });
+
+        function handleLogout() {
             // Remove user information from localStorage
             localStorage.removeItem('userId');
             localStorage.removeItem('username');
+            localStorage.removeItem('email');
             localStorage.removeItem('isAdmin');
             localStorage.removeItem('token');
             // Hide the matching button
@@ -650,129 +662,142 @@
             $(".admin-view").hide();
             toggleCards(welcomeText, loginCard);
             console.log(localStorage);
+        }
+
+        // Edit User Profile functions
+        $("#editUserBtn").on("click", function (event) {
+            // Clear error messages if any
+            $(".error").text("");
+            // Open edit user modal
+            var userId = localStorage.getItem("userId");
+            openEditUserModal(userId);
         });
 
-        // $("#editUserBtn").on("click", function (event) {
-        //     // Clear error messages if any
-        //     $(".error").text("");
-        //     // Open edit user modal
-        //     var userId = localStorage.getItem("userId");
-        //     openEditUserModal(userId);
-        // });
+        function openEditUserModal(userId) {
+            var username = localStorage.getItem("username"); 
+            var email = localStorage.getItem("email"); 
+            var password = "";
+            var token = localStorage.getItem("token");
 
-        // function openEditUserModal(userId) {            
+            // Clear the form of all data first
+            $("#userEditForm")[0].reset();
+            // Fill the form with the retrieved question data
+            $("#userId").val(userId);
+            $("#userUsername").val(username);
+            $("#userEmail").val(email);
+            $("#userPassword").val(password);
+            // Show the populated modal
+            $('#userEditModal').modal('show');
+        }
 
-        //     $("#userId").val(userId);
+        $("#userEditForm").on("submit", function (event) {
+            var userId = $("#userId").val();
+            var username = $("#userUsername").val();
+            var email = $("#userEmail").val();
+            var password = $("#userPassword").val();
+            var token = localStorage.getItem("token");
+
+            var isValid = userEditFormValidation(username, email, password)
+            if (!isValid){
+                event.preventDefault();
+                return;
+            }
+
+            $.ajax({
+                url: "http://localhost:3001/users/",
+                type: "PATCH",
+                contentType: 'application/json',
+                headers: {
+                    authorization: "Bearer " + token
+                },
+                data: JSON.stringify({
+                    id: userId,
+                    username: username,
+                    email: email,
+                    password: password
+                }),
+                success: function (response) {
+                    console.log("Successfully updated user info:", response);
+                    // Cache the updated user information in localStorage
+                    localStorage.setItem('username', username);
+                    localStorage.setItem('email', email);
+                    // Change name in welcome message
+                    $("#username-placeholder").text(username);
+                    // Hide modal
+                    $('#userEditModal').modal('hide');
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error in updating user info:", xhr);
+
+                    $('#edit-user-form-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('#edit-user-form-alert').addClass('alert-danger');
+                    $('#edit-user-form-alert').empty().append('<strong>Error!</strong> ' + error);
+                }
+            });
+            event.preventDefault();
+        });
+
+        function userEditFormValidation(username, email, password) {
+            isValid = true;
             
-        //     var questionTitle = "Sample Title"; 
-        //     var questionDescription = "Sample Description"; 
-        //     var questionCategories = "category1"; 
-        //     var questionComplexity = "medium";
+            // Clear error messages first to reset
+            $(".error").text("");
 
-        //     $.ajax({
-        //         url: "http://localhost:3001/users/",
-        //         type: "GET",
-        //         contentType: 'application/json',
-        //         data: JSON.stringify({
-        //             email: email
-        //         }),
-        //         success: function (response) {
-        //             questionTitle = response.username;
-        //             questionDescription = response.email;
-        //             questionCategories = response.password;
-        //             console.log("Successfully retrieved user:", response.username);
-                    
-        //             // Clear the form of all data first
-        //             $("#userEditForm")[0].reset();
-        //             // Fill the form with the retrieved question data
-        //             $("#questionTitle").val(questionTitle);
-        //             $("#questionDescription").val(questionDescription);
-        //             questionCategories.forEach(function(category) {
-        //                 $("#category" + category.replace(/\s/g, '')).prop("checked", true);
-        //             });
-        //             $("#questionComplexity").val(questionComplexity);
-        //             // Show the populated modal
-        //             $('#userEditModal').modal('show');
-        //         },
-        //         error: function (xhr, status, error) {
-        //             console.error("Error in updating question:", error);
-        //         }
-        //     });
-        // }
+            // Check each field for empty input
+            if (username === "") {
+                $("#userUsernameError").text("Username is required");
+                console.log("Username is required");
+                isValid = false;
+            }
 
-        // // Define what happens when the submitQuestionBtn is clicked
-        // $("#submitQuestionBtn").on("click", function () {
-        //     console.log("isEditMode: " + isEditMode);
-        //     submitEditUserForm();
-        // });
-
-        // function submitEditUserForm() {
-        //     var title = $("#questionTitle").val();
-        //     var desc = $("#questionDescription").val();            
-        //     var complexity = $("#questionComplexity").val();
-
-        //     $.ajax({
-        //         url: "http://localhost:3001/users/",
-        //         type: "PATCH",
-        //         contentType: 'application/json',
-        //         data: JSON.stringify({
-        //             id: title,
-        //             username: desc,
-        //             email: selectedCategories,
-        //             password: complexity
-        //         }),
-        //         success: function (response) {
-        //             questionTitle = response.title;
-        //             questionDescription = response.description;
-        //             questionCategories = response.category;
-        //             questionComplexity = response.complexity;
-        //             console.log("Successfully retrieved question:", response.title);
-                    
-        //             // Clear the form of all data first
-        //             $("#questionForm")[0].reset();
-        //             // Fill the form with the retrieved question data
-        //             $("#questionTitle").val(questionTitle);
-        //             $("#questionDescription").val(questionDescription);
-        //             questionCategories.forEach(function(category) {
-        //                 $("#category" + category.replace(/\s/g, '')).prop("checked", true);
-        //             });
-        //             $("#questionComplexity").val(questionComplexity);
-        //             // Show the populated modal
-        //             $('#userEditModal').modal('show');
-        //         },
-        //         error: function (xhr, status, error) {
-        //             console.error("Error in updating question:", error);
-        //         }
-        //     });
-        // }
-
-        // function userEditFormValidation(username, email, password) {
-        //     isValid = true;
+            if (email === "") {
+                $("#userEmailError").text("Email is required");
+                console.log("Email is required");
+                isValid = false;
+            }
             
-        //     // Clear error messages first to reset
-        //     $(".error").text("");
+            if (password === "") {
+                $("#userPasswordError").text("Password is required");
+                console.log("Password is required");
+                isValid = false;
+            }
 
-        //     // Check each field for empty input
-        //     if (username === "") {
-        //         $("#userUsernameError").text("Username is required");
-        //         console.log("Username is required");
-        //         isValid = false;
-        //     }
+            return isValid;
+        }
 
-        //     if (email === "") {
-        //         $("#userEmailError").text("Email is required");
-        //         console.log("Email is required");
-        //         isValid = false;
-        //     }
-            
-        //     if (password === "") {
-        //         $("#userPasswordError").text("Password is required");
-        //         console.log("Password is required");
-        //         isValid = false;
-        //     }
+        $("#deleteUserBtn").on("click", function (event) {
+            var email = $("#userEmail").val();
+            var token = localStorage.getItem("token");
 
-        //     return isValid;
-        // }
+            $.ajax({
+                url: "http://localhost:3001/users/",
+                type: "DELETE",
+                contentType: 'application/json',
+                headers: {
+                    authorization: "Bearer " + token
+                },
+                data: JSON.stringify({
+                    email: email
+                }),
+                success: function (response) {
+                    console.log("Successfully deleted user:", response);
+                    $('#userEditModal').modal('hide');
+                    handleLogout();
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error in updating user info:", xhr);
+
+                    $('#edit-user-form-alert').css('display', 'flex').delay(3000).fadeOut('slow', function() {
+                        $(this).css('display', 'none');
+                    });
+                    $('#edit-user-form-alert').addClass('alert-danger');
+                    $('#edit-user-form-alert').empty().append('<strong>Error!</strong>' + error);
+                }
+            });
+            event.preventDefault();
+        });
         
 
         // ************************ QUESTION SERVICE FUNCTIONS ************************
