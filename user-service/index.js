@@ -41,7 +41,7 @@ const client = new Eureka({
     app: process.env.SERVICE || 'user-service',
     hostName: 'localhost',
     ipAddr: process.env.LOCAL_IPADDR || '127.0.0.1',
-    statusPageUrl: 'http://localhost:8080/',
+    statusPageUrl: 'http://localhost:3001/',
     vipAddress: process.env.SERVICE || 'user-service',
     port: {
       '$': PORT,
@@ -97,5 +97,9 @@ app.use((error, req, res, next) => {
     },
   });
 });
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}...`)
+})
 
 export default app;
